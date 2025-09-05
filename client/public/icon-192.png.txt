@@ -1,0 +1,3 @@
+This should be replaced with a 192x192 PNG icon for myDay app.
+You can create one online at https://favicon.io or similar services.
+Use a briefcase or HR-related icon with blue gradient background.

@@ -1,0 +1,361 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, decimal, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  role: text("role").notNull().default("employee"), // admin, manager, employee
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+});
+
+export const employees = pgTable("employees", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  employeeId: text("employee_id").notNull().unique(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  department: text("department").notNull(),
+  role: text("role").notNull(),
+  salary: decimal("salary", { precision: 10, scale: 2 }).notNull(),
+  status: text("status").notNull().default("active"), // active, inactive
+  hireDate: timestamp("hire_date").notNull(),
+  // Indian-specific fields
+  panNumber: text("pan_number"),
+  aadhaarNumber: text("aadhaar_number"),
+  uanNumber: text("uan_number"), // Universal Account Number for PF
+  esicNumber: text("esic_number"), // Employee State Insurance
+  bankAccount: text("bank_account"),
+  ifscCode: text("ifsc_code"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const attendance = pgTable("attendance", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  date: timestamp("date").notNull(),
+  checkIn: timestamp("check_in"),
+  checkOut: timestamp("check_out"),
+  status: text("status").notNull(), // present, absent, late, half-day
+  hoursWorked: decimal("hours_worked", { precision: 4, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const payroll = pgTable("payroll", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  period: text("period").notNull(), // YYYY-MM format
+  baseSalary: decimal("base_salary", { precision: 10, scale: 2 }).notNull(),
+  // Indian salary components
+  hra: decimal("hra", { precision: 10, scale: 2 }).default("0"), // House Rent Allowance
+  medicalAllowance: decimal("medical_allowance", { precision: 10, scale: 2 }).default("0"),
+  transportAllowance: decimal("transport_allowance", { precision: 10, scale: 2 }).default("0"),
+  otherAllowances: decimal("other_allowances", { precision: 10, scale: 2 }).default("0"),
+  // Indian deductions
+  providentFund: decimal("provident_fund", { precision: 10, scale: 2 }).default("0"), // PF
+  employeeStateInsurance: decimal("employee_state_insurance", { precision: 10, scale: 2 }).default("0"), // ESI
+  professionalTax: decimal("professional_tax", { precision: 10, scale: 2 }).default("0"), // PT
+  incomeTax: decimal("income_tax", { precision: 10, scale: 2 }).default("0"), // TDS
+  otherDeductions: decimal("other_deductions", { precision: 10, scale: 2 }).default("0"),
+  grossPay: decimal("gross_pay", { precision: 10, scale: 2 }).notNull(),
+  netPay: decimal("net_pay", { precision: 10, scale: 2 }).notNull(),
+  hoursWorked: decimal("hours_worked", { precision: 6, scale: 2 }).notNull(),
+  processed: boolean("processed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// GPS Locations
+export const gpsLocations = pgTable("gps_locations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  attendanceId: varchar("attendance_id").references(() => attendance.id).notNull(),
+  latitude: decimal("latitude", { precision: 10, scale: 6 }).notNull(),
+  longitude: decimal("longitude", { precision: 10, scale: 6 }).notNull(),
+  accuracy: decimal("accuracy", { precision: 10, scale: 2 }),
+  timestamp: timestamp("timestamp").notNull(),
+});
+
+// Expenses
+export const expenses = pgTable("expenses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  date: timestamp("date").notNull(),
+  category: text("category").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  receiptUrl: text("receipt_url"),
+  status: text("status").notNull().default("pending"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Leave Requests
+export const leaveRequests = pgTable("leave_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  type: text("type").notNull(),
+  reason: text("reason").notNull(),
+  status: text("status").notNull().default("pending"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Documents
+export const documents = pgTable("documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  type: text("type").notNull(),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  uploadedBy: varchar("uploaded_by").references(() => users.id).notNull(),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Employee Profiles
+export const employeeProfiles = pgTable("employee_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  phoneNumber: text("phone_number"),
+  emergencyContact: text("emergency_contact"),
+  address: text("address"),
+  dateOfBirth: timestamp("date_of_birth"),
+  bloodGroup: text("blood_group"),
+  maritalStatus: text("marital_status"),
+  photo: text("photo_url"),
+  skills: text("skills").array(),
+  education: text("education").array(),
+  experience: text("experience").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Insert schemas
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+});
+
+export const insertEmployeeSchema = createInsertSchema(employees).omit({
+  id: true,
+  createdAt: true,
+});
+
+// GPS Location for attendance
+export const gpsLocations = pgTable("gps_locations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  attendanceId: varchar("attendance_id").references(() => attendance.id).notNull(),
+  latitude: decimal("latitude", { precision: 10, scale: 6 }).notNull(),
+  longitude: decimal("longitude", { precision: 10, scale: 6 }).notNull(),
+  accuracy: decimal("accuracy", { precision: 10, scale: 2 }),
+  timestamp: timestamp("timestamp").notNull(),
+});
+
+// Expense claims
+export const expenses = pgTable("expenses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  date: timestamp("date").notNull(),
+  category: text("category").notNull(), // travel, meals, supplies, etc.
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  receiptUrl: text("receipt_url"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Leave requests
+export const leaveRequests = pgTable("leave_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  type: text("type").notNull(), // casual, sick, earned, maternity, paternity
+  reason: text("reason").notNull(),
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Document management
+export const documents = pgTable("documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  type: text("type").notNull(), // aadhar, pan, offer_letter, certificates, etc.
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  uploadedBy: varchar("uploaded_by").references(() => users.id).notNull(),
+  status: text("status").notNull().default("active"), // active, archived
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Employee profiles
+export const employeeProfiles = pgTable("employee_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  phoneNumber: text("phone_number"),
+  emergencyContact: text("emergency_contact"),
+  address: text("address"),
+  dateOfBirth: timestamp("date_of_birth"),
+  bloodGroup: text("blood_group"),
+  maritalStatus: text("marital_status"),
+  photo: text("photo_url"),
+  skills: text("skills").array(),
+  education: text("education").array(),
+  experience: text("experience").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAttendanceSchema = createInsertSchema(attendance).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPayrollSchema = createInsertSchema(payroll).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Auth schemas
+export const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+// Types
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type Employee = typeof employees.$inferSelect;
+export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+
+export type Attendance = typeof attendance.$inferSelect;
+export type InsertAttendance = z.infer<typeof insertAttendanceSchema>;
+
+export type Payroll = typeof payroll.$inferSelect;
+export type InsertPayroll = z.infer<typeof insertPayrollSchema>;
+
+export type LoginData = z.infer<typeof loginSchema>;
+
+// GPS Punch Records
+export const gpsLocations = pgTable("gps_locations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  attendanceId: varchar("attendance_id").references(() => attendance.id).notNull(),
+  latitude: decimal("latitude", { precision: 10, scale: 6 }).notNull(),
+  longitude: decimal("longitude", { precision: 10, scale: 6 }).notNull(),
+  accuracy: decimal("accuracy", { precision: 10, scale: 2 }),
+  timestamp: timestamp("timestamp").notNull(),
+});
+
+// Expense Claims
+export const expenses = pgTable("expenses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  date: timestamp("date").notNull(),
+  category: text("category").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  receiptUrl: text("receipt_url"),
+  status: text("status").notNull().default("pending"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Leave Requests
+export const leaveRequests = pgTable("leave_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  type: text("type").notNull(),
+  reason: text("reason").notNull(),
+  status: text("status").notNull().default("pending"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Document Management
+export const documents = pgTable("documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  type: text("type").notNull(),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  uploadedBy: varchar("uploaded_by").references(() => users.id).notNull(),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Employee Profiles
+export const employeeProfiles = pgTable("employee_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  employeeId: varchar("employee_id").references(() => employees.id).notNull(),
+  phoneNumber: text("phone_number"),
+  emergencyContact: text("emergency_contact"),
+  address: text("address"),
+  dateOfBirth: timestamp("date_of_birth"),
+  bloodGroup: text("blood_group"),
+  maritalStatus: text("marital_status"),
+  photo: text("photo_url"),
+  skills: text("skills").array(),
+  education: text("education").array(),
+  experience: text("experience").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// New types for additional features
+export type GPSLocation = typeof gpsLocations.$inferSelect;
+export type Expense = typeof expenses.$inferSelect;
+export type LeaveRequest = typeof leaveRequests.$inferSelect;
+export type Document = typeof documents.$inferSelect;
+export type EmployeeProfile = typeof employeeProfiles.$inferSelect;
+
+// Insert schemas for new tables
+export const insertGPSLocationSchema = createInsertSchema(gpsLocations).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertExpenseSchema = createInsertSchema(expenses).omit({
+  id: true,
+  approvedBy: true,
+  approvedAt: true,
+  createdAt: true,
+});
+
+export const insertLeaveRequestSchema = createInsertSchema(leaveRequests).omit({
+  id: true,
+  approvedBy: true,
+  approvedAt: true,
+  createdAt: true,
+});
+
+export const insertDocumentSchema = createInsertSchema(documents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEmployeeProfileSchema = createInsertSchema(employeeProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Insert types for new features
+export type InsertGPSLocation = z.infer<typeof insertGPSLocationSchema>;
+export type InsertExpense = z.infer<typeof insertExpenseSchema>;
+export type InsertLeaveRequest = z.infer<typeof insertLeaveRequestSchema>;
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type InsertEmployeeProfile = z.infer<typeof insertEmployeeProfileSchema>;

@@ -1,0 +1,929 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Management System - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)", 
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                    colors: {
+                        background: "var(--background)",
+                        foreground: "var(--foreground)",
+                        card: {
+                            DEFAULT: "var(--card)",
+                            foreground: "var(--card-foreground)",
+                        },
+                        popover: {
+                            DEFAULT: "var(--popover)",
+                            foreground: "var(--popover-foreground)",
+                        },
+                        primary: {
+                            DEFAULT: "var(--primary)",
+                            foreground: "var(--primary-foreground)",
+                        },
+                        secondary: {
+                            DEFAULT: "var(--secondary)",
+                            foreground: "var(--secondary-foreground)",
+                        },
+                        muted: {
+                            DEFAULT: "var(--muted)",
+                            foreground: "var(--muted-foreground)",
+                        },
+                        accent: {
+                            DEFAULT: "var(--accent)",
+                            foreground: "var(--accent-foreground)",
+                        },
+                        destructive: {
+                            DEFAULT: "var(--destructive)",
+                            foreground: "var(--destructive-foreground)",
+                        },
+                        border: "var(--border)",
+                        input: "var(--input)",
+                        ring: "var(--ring)",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "var(--font-sans)"],
+                    }
+                },
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222.2 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222.2 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222.2 84% 4.9%);
+            --primary: hsl(213 94% 68%);
+            --primary-foreground: hsl(0 0% 100%);
+            --secondary: hsl(215 16% 47%);
+            --secondary-foreground: hsl(0 0% 100%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215.4 16.3% 46.9%);
+            --accent: hsl(210 40% 94%);
+            --accent-foreground: hsl(222.2 84% 4.9%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214.3 31.8% 91.4%);
+            --input: hsl(214.3 31.8% 91.4%);
+            --ring: hsl(213 94% 68%);
+            --radius: 8px;
+        }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background font-sans">
+    <!-- @COMPONENT: MainLayout -->
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <!-- @COMPONENT: Sidebar -->
+        <div id="sidebar" class="bg-card border-r border-border w-64 flex-shrink-0 sidebar-transition md:translate-x-0 sidebar-hidden md:sidebar-visible fixed md:relative z-30 h-full">
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-primary-foreground text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-semibold text-foreground">HR System</h1>
+                        <p class="text-sm text-muted-foreground">Employee Portal</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" data-section="dashboard" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md text-foreground hover:bg-accent transition-colors bg-accent">
+                            <i class="fas fa-chart-line w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="employees" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent transition-colors">
+                            <i class="fas fa-users w-5"></i>
+                            <span>Employees</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="attendance" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent transition-colors">
+                            <i class="fas fa-clock w-5"></i>
+                            <span>Attendance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="payroll" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent transition-colors">
+                            <i class="fas fa-dollar-sign w-5"></i>
+                            <span>Payroll</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="reports" class="nav-link flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent transition-colors">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                        <span data-bind="user.initials" class="text-secondary-foreground text-sm font-medium">JD</span>
+                    </div>
+                    <div class="flex-1">
+                        <p data-bind="user.name" class="text-sm font-medium text-foreground">John Doe</p>
+                        <p data-bind="user.role" class="text-xs text-muted-foreground">HR Manager</p>
+                    </div>
+                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:handleLogout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <!-- @COMPONENT: Header -->
+            <header class="bg-card border-b border-border px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button id="menuToggle" class="md:hidden text-muted-foreground hover:text-foreground">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-xl font-semibold text-foreground">Dashboard</h2>
+                            <p class="text-sm text-muted-foreground">Welcome back, monitor your team's performance</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="relative text-muted-foreground hover:text-foreground transition-colors">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs"></span>
+                        </button>
+                        <div class="flex items-center space-x-2 bg-accent px-3 py-1 rounded-md">
+                            <i class="fas fa-calendar text-muted-foreground"></i>
+                            <span class="text-sm text-foreground" data-bind="currentDate">Dec 15, 2024</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-auto p-6">
+                <!-- Dashboard Section -->
+                <!-- @COMPONENT: DashboardSection -->
+                <div id="dashboard-section" class="content-section">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Total Employees</p>
+                                    <p class="text-2xl font-bold text-foreground" data-bind="stats.totalEmployees">247</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-green-600">↗ 12%</span>
+                                <span class="text-muted-foreground ml-2">vs last month</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Present Today</p>
+                                    <p class="text-2xl font-bold text-foreground" data-bind="stats.presentToday">234</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-green-600">94.7%</span>
+                                <span class="text-muted-foreground ml-2">attendance rate</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">On Leave</p>
+                                    <p class="text-2xl font-bold text-foreground" data-bind="stats.onLeave">8</p>
+                                </div>
+                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-calendar-times text-yellow-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-muted-foreground">3 sick, 5 vacation</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Payroll Due</p>
+                                    <p class="text-2xl font-bold text-foreground" data-bind="stats.payrollDue">$89,420</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-muted-foreground">Due in 3 days</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity & Quick Actions -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Recent Activity -->
+                        <div class="lg:col-span-2 bg-card rounded-lg border border-border">
+                            <div class="p-6 border-b border-border">
+                                <h3 class="text-lg font-semibold text-foreground">Recent Activity</h3>
+                            </div>
+                            <div class="p-6">
+                                <!-- @MAP: recentActivities.map(activity => ( -->
+                                <div class="space-y-4" data-mock="true">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-user-plus text-blue-600 text-sm"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-foreground">New employee Sarah Johnson joined</p>
+                                            <p class="text-xs text-muted-foreground">Marketing Department • 2 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-check text-green-600 text-sm"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-foreground">Payroll processed for December</p>
+                                            <p class="text-xs text-muted-foreground">247 employees • 4 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600 text-sm"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-foreground">Late attendance alert</p>
+                                            <p class="text-xs text-muted-foreground">5 employees • 6 hours ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="bg-card rounded-lg border border-border">
+                            <div class="p-6 border-b border-border">
+                                <h3 class="text-lg font-semibold text-foreground">Quick Actions</h3>
+                            </div>
+                            <div class="p-6 space-y-3">
+                                <button class="w-full flex items-center space-x-3 p-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors" data-event="click:addEmployee">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>Add Employee</span>
+                                </button>
+                                <button class="w-full flex items-center space-x-3 p-3 bg-accent hover:bg-accent/80 text-accent-foreground rounded-md transition-colors" data-event="click:generatePayroll">
+                                    <i class="fas fa-calculator"></i>
+                                    <span>Generate Payroll</span>
+                                </button>
+                                <button class="w-full flex items-center space-x-3 p-3 bg-accent hover:bg-accent/80 text-accent-foreground rounded-md transition-colors" data-event="click:viewReports">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>View Reports</span>
+                                </button>
+                                <button class="w-full flex items-center space-x-3 p-3 bg-accent hover:bg-accent/80 text-accent-foreground rounded-md transition-colors" data-event="click:manageAttendance">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Attendance</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: DashboardSection -->
+
+                <!-- Employees Section -->
+                <!-- @COMPONENT: EmployeesSection -->
+                <div id="employees-section" class="content-section hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-foreground mb-4 sm:mb-0">Employee Management</h2>
+                        <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors flex items-center space-x-2" data-event="click:addEmployee">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Employee</span>
+                        </button>
+                    </div>
+
+                    <!-- Search and Filters -->
+                    <div class="bg-card rounded-lg border border-border p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Search</label>
+                                <div class="relative">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+                                    <input type="text" placeholder="Search employees..." class="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="input:handleSearch">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Department</label>
+                                <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleDepartmentFilter">
+                                    <option value="">All Departments</option>
+                                    <option value="hr">Human Resources</option>
+                                    <option value="it">Information Technology</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="finance">Finance</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Role</label>
+                                <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleRoleFilter">
+                                    <option value="">All Roles</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="employee">Employee</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Status</label>
+                                <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleStatusFilter">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Table -->
+                    <div class="bg-card rounded-lg border border-border overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-muted">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Employee</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Department</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Role</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Salary</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card divide-y divide-border">
+                                    <!-- @MAP: employees.map(employee => ( -->
+                                    <tr class="hover:bg-accent transition-colors" data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <span class="text-blue-600 font-medium">SJ</span>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-foreground">Sarah Johnson</div>
+                                                    <div class="text-sm text-muted-foreground">sarah.johnson@company.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Marketing</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Manager</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">$75,000</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                                            <div class="flex space-x-2">
+                                                <button class="text-blue-600 hover:text-blue-900" data-event="click:editEmployee">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-900" data-event="click:viewEmployee">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-red-600 hover:text-red-900" data-event="click:deleteEmployee">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-accent transition-colors" data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <span class="text-green-600 font-medium">MC</span>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-foreground">Michael Chen</div>
+                                                    <div class="text-sm text-muted-foreground">michael.chen@company.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">IT</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Developer</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">$68,000</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                                            <div class="flex space-x-2">
+                                                <button class="text-blue-600 hover:text-blue-900" data-event="click:editEmployee">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-900" data-event="click:viewEmployee">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-red-600 hover:text-red-900" data-event="click:deleteEmployee">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: EmployeesSection -->
+
+                <!-- Attendance Section -->
+                <!-- @COMPONENT: AttendanceSection -->
+                <div id="attendance-section" class="content-section hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-foreground mb-4 sm:mb-0">Attendance Management</h2>
+                        <div class="flex space-x-3">
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors flex items-center space-x-2" data-event="click:punchIn">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Punch In</span>
+                            </button>
+                            <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors flex items-center space-x-2" data-event="click:punchOut">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Punch Out</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Today's Summary -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Check-in Time</p>
+                                    <p class="text-xl font-bold text-foreground" data-bind="attendance.checkIn">09:15 AM</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-clock text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Hours Worked</p>
+                                    <p class="text-xl font-bold text-foreground" data-bind="attendance.hoursWorked">7h 45m</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-stopwatch text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Status</p>
+                                    <p class="text-xl font-bold text-green-600" data-bind="attendance.status">Present</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance History -->
+                    <div class="bg-card rounded-lg border border-border">
+                        <div class="p-6 border-b border-border">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                                <h3 class="text-lg font-semibold text-foreground mb-4 sm:mb-0">Attendance History</h3>
+                                <div class="flex space-x-3">
+                                    <select class="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleMonthFilter">
+                                        <option value="current">Current Month</option>
+                                        <option value="last">Last Month</option>
+                                        <option value="custom">Custom Range</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-muted">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Check In</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Check Out</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Hours</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card divide-y divide-border">
+                                    <!-- @MAP: attendanceRecords.map(record => ( -->
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Dec 15, 2024</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">09:15 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">06:00 PM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">8h 45m</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Present</span>
+                                        </td>
+                                    </tr>
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Dec 14, 2024</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">09:30 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">05:45 PM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">8h 15m</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Late</span>
+                                        </td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: AttendanceSection -->
+
+                <!-- Payroll Section -->
+                <!-- @COMPONENT: PayrollSection -->
+                <div id="payroll-section" class="content-section hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-foreground mb-4 sm:mb-0">Payroll Management</h2>
+                        <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors flex items-center space-x-2" data-event="click:generatePayroll">
+                            <i class="fas fa-calculator"></i>
+                            <span>Generate Payroll</span>
+                        </button>
+                    </div>
+
+                    <!-- Payroll Overview -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Total Payroll</p>
+                                    <p class="text-2xl font-bold text-foreground" data-bind="payroll.total">$1,247,500</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-muted-foreground">For December 2024</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Employees Paid</p>
+                                    <p class="text-2xl font-bold text-foreground" data-bind="payroll.employeesPaid">247</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-green-600">100%</span>
+                                <span class="text-muted-foreground ml-2">completion</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-muted-foreground">Avg. Salary</p>
+                                    <p class="text-2xl font-bold text-foreground" data-bind="payroll.avgSalary">$5,051</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-green-600">↗ 3.2%</span>
+                                <span class="text-muted-foreground ml-2">vs last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payroll History -->
+                    <div class="bg-card rounded-lg border border-border">
+                        <div class="p-6 border-b border-border">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                                <h3 class="text-lg font-semibold text-foreground mb-4 sm:mb-0">Recent Payslips</h3>
+                                <div class="flex space-x-3">
+                                    <select class="px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handlePayrollFilter">
+                                        <option value="all">All Employees</option>
+                                        <option value="hr">HR Department</option>
+                                        <option value="it">IT Department</option>
+                                        <option value="marketing">Marketing</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-muted">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Employee</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Period</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Gross Pay</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Deductions</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Net Pay</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card divide-y divide-border">
+                                    <!-- @MAP: payrollRecords.map(record => ( -->
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <span class="text-blue-600 font-medium text-sm">SJ</span>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <div class="text-sm font-medium text-foreground">Sarah Johnson</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Dec 2024</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">$6,250</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">$1,875</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">$4,375</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                                            <div class="flex space-x-2">
+                                                <button class="text-blue-600 hover:text-blue-900" data-event="click:viewPayslip">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-900" data-event="click:downloadPayslip">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <span class="text-green-600 font-medium text-sm">MC</span>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <div class="text-sm font-medium text-foreground">Michael Chen</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">Dec 2024</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">$5,667</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">$1,700</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">$3,967</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                                            <div class="flex space-x-2">
+                                                <button class="text-blue-600 hover:text-blue-900" data-event="click:viewPayslip">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="text-green-600 hover:text-green-900" data-event="click:downloadPayslip">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: PayrollSection -->
+
+                <!-- Reports Section -->
+                <!-- @COMPONENT: ReportsSection -->
+                <div id="reports-section" class="content-section hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-foreground mb-4 sm:mb-0">Reports & Analytics</h2>
+                        <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors flex items-center space-x-2" data-event="click:exportReport">
+                            <i class="fas fa-download"></i>
+                            <span>Export Report</span>
+                        </button>
+                    </div>
+
+                    <!-- Report Filters -->
+                    <div class="bg-card rounded-lg border border-border p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Report Type</label>
+                                <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleReportType">
+                                    <option value="attendance">Attendance Report</option>
+                                    <option value="payroll">Payroll Report</option>
+                                    <option value="employee">Employee Report</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Date Range</label>
+                                <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleDateRange">
+                                    <option value="current">Current Month</option>
+                                    <option value="last">Last Month</option>
+                                    <option value="quarter">Last Quarter</option>
+                                    <option value="year">Last Year</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Department</label>
+                                <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleDepartment">
+                                    <option value="">All Departments</option>
+                                    <option value="hr">Human Resources</option>
+                                    <option value="it">Information Technology</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="finance">Finance</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-2">Format</label>
+                                <select class="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring" data-event="change:handleFormat">
+                                    <option value="pdf">PDF</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="excel">Excel</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Analytics -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Attendance Chart -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h3 class="text-lg font-semibold text-foreground mb-4">Attendance Trends</h3>
+                            <div class="h-64 bg-muted rounded-lg flex items-center justify-center">
+                                <div class="text-center text-muted-foreground">
+                                    <i class="fas fa-chart-line text-4xl mb-2"></i>
+                                    <p><!-- @FUNCTIONALITY: Implement attendance chart using Chart.js or similar --></p>
+                                    <p class="text-sm">Attendance chart visualization</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Department Distribution -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h3 class="text-lg font-semibold text-foreground mb-4">Department Distribution</h3>
+                            <div class="h-64 bg-muted rounded-lg flex items-center justify-center">
+                                <div class="text-center text-muted-foreground">
+                                    <i class="fas fa-chart-pie text-4xl mb-2"></i>
+                                    <p><!-- @FUNCTIONALITY: Implement pie chart for department distribution --></p>
+                                    <p class="text-sm">Department pie chart</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-card rounded-lg border border-border p-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600" data-bind="reports.avgAttendance">94.7%</div>
+                                <div class="text-sm text-muted-foreground">Avg. Attendance</div>
+                            </div>
+                        </div>
+                        <div class="bg-card rounded-lg border border-border p-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600" data-bind="reports.onTimeRate">87.3%</div>
+                                <div class="text-sm text-muted-foreground">On-time Rate</div>
+                            </div>
+                        </div>
+                        <div class="bg-card rounded-lg border border-border p-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600" data-bind="reports.avgHours">8.2h</div>
+                                <div class="text-sm text-muted-foreground">Avg. Daily Hours</div>
+                            </div>
+                        </div>
+                        <div class="bg-card rounded-lg border border-border p-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-orange-600" data-bind="reports.leaveRequests">23</div>
+                                <div class="text-sm text-muted-foreground">Pending Leaves</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ReportsSection -->
+            </main>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
+
+    <script>
+        // TODO: Implement proper state management and API integration
+        (function() {
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            menuToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('sidebar-hidden');
+                sidebarOverlay.classList.toggle('hidden');
+            });
+
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.add('sidebar-hidden');
+                sidebarOverlay.classList.add('hidden');
+            });
+
+            // Navigation handling
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = link.getAttribute('data-section');
+                    
+                    // Update active nav link
+                    navLinks.forEach(nl => {
+                        nl.classList.remove('bg-accent', 'text-foreground');
+                        nl.classList.add('text-muted-foreground');
+                    });
+                    link.classList.add('bg-accent', 'text-foreground');
+                    link.classList.remove('text-muted-foreground');
+                    
+                    // Show corresponding section
+                    contentSections.forEach(cs => cs.classList.add('hidden'));
+                    document.getElementById(`${section}-section`)?.classList.remove('hidden');
+                    
+                    // Update header title
+                    const headerTitle = document.querySelector('header h2');
+                    if (headerTitle) {
+                        headerTitle.textContent = section.charAt(0).toUpperCase() + section.slice(1);
+                    }
+                    
+                    // Close mobile menu
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.add('sidebar-hidden');
+                        sidebarOverlay.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Form and button interactions (placeholder implementations)
+            document.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-event]');
+                if (!target) return;
+                
+                const event = target.getAttribute('data-event');
+                console.log('Event triggered:', event);
+                // TODO: Implement actual event handlers
+            });
+
+            document.addEventListener('input', (e) => {
+                if (e.target.hasAttribute('data-event')) {
+                    const event = e.target.getAttribute('data-event');
+                    console.log('Input event:', event, e.target.value);
+                    // TODO: Implement search and filter functionality
+                }
+            });
+
+            document.addEventListener('change', (e) => {
+                if (e.target.hasAttribute('data-event')) {
+                    const event = e.target.getAttribute('data-event');
+                    console.log('Change event:', event, e.target.value);
+                    // TODO: Implement filter and selection handlers
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
