@@ -1,0 +1,650 @@
+// Backup of server/routes.ts
+// Created: 2025-09-22T00:00:00Z
+// This is an automatic backup created by the assistant. It contains the original contents of server/routes.ts at the time of backup.
+
+import type { Express, Request, Response, NextFunction } from "express";
+import { createServer, type Server } from "http";
+import { storage as dbStorage } from "./db-storage";
+import { insertEmployeeSchema, insertAttendanceSchema, insertPayrollSchema, loginSchema } from "@shared/schema";
+import { z } from "zod";
+import { randomUUID } from "crypto";
+
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
+
+// Simple session middleware
+const sessions = new Map<string, any>();
+
+function generateSessionId(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token || !sessions.has(token)) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  
+  req.user = sessions.get(token);
+  next();
+}
+
+// File upload middleware
+import multer from 'multer';
+import path from 'path';
+
+const multerStorage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${path.basename(file.originalname)}`);
+  }
+});
+
+const upload = multer({ storage: multerStorage });
+
+// Import route handlers
+import expenseRoutes from './routes/expenses';
+import leaveRoutes from './routes/leave';
+import reportRoutes from './routes/reports';
+import documentsRoutes from './routes/documents';
+import notifyRoutes from './routes/notify';
+import holidaysRoutes from './routes/holidays';
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Register expense routes
+  app.use('/api/expenses', authenticateToken, expenseRoutes);
+  
+  // Register leave routes
+  app.use('/api/leave-requests', authenticateToken, leaveRoutes);
+  
+  // Register documents routes
+  app.use('/api/documents', authenticateToken, documentsRoutes);
+
+  // Register report routes
+  app.use('/api/reports', authenticateToken, reportRoutes);
+
+  // Register notify routes. Leave creation is allowed without auth so internal calls from the server can post notifications.
+  // Sensitive notify endpoints (approve/list/me) are protected inside the notify router itself.
+  app.use('/api/notify', notifyRoutes);
+
+  // Holidays routes
+  app.use('/api/holidays', authenticateToken, holidaysRoutes);
+  
+  // Auth routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      console.log('DEBUG /api/auth/login body:', req.body);
+      const safe = loginSchema.safeParse(req.body);
+      console.log('DEBUG loginSchema.safeParse:', safe);
+      const { username, password } = loginSchema.parse(req.body);
+      
+      const user = await dbStorage.getUserByUsername(username);
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      const sessionId = generateSessionId();
+      sessions.set(sessionId, user);
+      
+      const employee = await dbStorage.getEmployeeByUserId(user.id);
+      
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          role: user.role, 
+          name: user.name,
+          email: user.email 
+        },
+        employee,
+        token: sessionId 
+      });
+    } catch (error) {
+      console.error('Error in /api/auth/login:', error);
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    const sessionId = req.headers.authorization?.replace('Bearer ', '');
+    if (sessionId) {
+      sessions.delete(sessionId);
+    }
+    res.json({ message: "Logged out successfully" });
+  });
+
+  app.get("/api/auth/me", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    const employee = await dbStorage.getEmployeeByUserId(req.user.id);
+    res.json({ 
+      user: req.user,
+      employee 
+    });
+  });
+
+  // Employee routes
+  app.get("/api/employees", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      // Only admins and managers can view all employees
+      if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      const { search, department, role, status } = req.query;
+      console.log('GET /api/employees - Query params:', { search, department, role, status });
+      console.log('User:', req.user);
+      
+      if (search || department || role || status) {
+        console.log('Searching employees with filters');
+        const employees = await dbStorage.searchEmployees(
+          search as string || "", 
+          {
+            department: department as string,
+            role: role as string,
+            status: status as string
+          }
+        );
+        console.log('Found employees:', employees);
+        res.json(employees);
+      } else {
+        console.log('Getting all employees');
+        const employees = await dbStorage.getEmployees();
+        console.log('Found employees:', employees);
+        res.json(employees);
+      }
+    } catch (error) {
+      console.error('Error in GET /api/employees:', error);
+      res.status(500).json([]);
+    }
+  });
+
+  app.get("/api/employees/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      // Employees can only view their own profile, admins/managers can view any
+      const employee = await dbStorage.getEmployee(req.params.id);
+      if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      // Check if user is trying to access their own profile or if they have admin/manager role
+      const userEmployee = await dbStorage.getEmployeeByUserId(req.user.id);
+      if (req.user.role === 'employee' && userEmployee?.id !== req.params.id) {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      res.json(employee);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch employee" });
+    }
+  });
+
+  app.post("/api/employees", authenticateToken, upload.single('profilePhoto'), async (req: AuthenticatedRequest, res) => {
+    try {
+      if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      console.log('POST /api/employees - Request body:', req.body);
+      // When a profile photo is uploaded via multipart/form-data, fields will be in req.body as strings
+      const rawBody: any = req.body || {};
+
+      // parse skills if passed as comma-separated string
+      if (rawBody.skills && typeof rawBody.skills === 'string') {
+        try {
+          rawBody.skills = JSON.parse(rawBody.skills);
+        } catch (e) {
+          rawBody.skills = rawBody.skills.split(',').map((s: string) => s.trim()).filter(Boolean);
+        }
+      }
+
+      const employeeData = insertEmployeeSchema.parse(rawBody);
+      console.log('Parsed employee data:', employeeData);
+      
+      const { firstName, lastName, email } = employeeData;
+      
+      // Check if user already exists
+      console.log('Checking if user exists with email:', email);
+      let newUser = await dbStorage.getUserByUsername(email);
+      console.log('Existing user found:', newUser);
+      
+      let initialPassword: string | undefined = undefined;
+      if (!newUser) {
+        console.log('Creating new user...');
+        // Generate a random password
+        initialPassword = Math.random().toString(36).slice(-10) + "A1!";
+        newUser = await dbStorage.createUser({
+          id: randomUUID(),
+          username: email, // Use email as username
+          password: initialPassword,
+          email,
+          name: `${firstName} ${lastName}`,
+          role: "employee",
+        });
+        console.log('Created new user:', newUser);
+      } else {
+        console.log('Using existing user:', newUser);
+      }
+
+      // Check if employee already exists with this employee ID
+      const existingEmployee = await dbStorage.getEmployeeByUserId(newUser.id);
+      if (existingEmployee) {
+        return res.status(400).json({ 
+          message: "Employee already exists for this user",
+          employee: existingEmployee 
+        });
+      }
+
+      const processedData: any = {
+        ...employeeData,
+        userId: newUser.id, // Link to the new user
+        joinDate: employeeData.joinDate ? new Date(employeeData.joinDate) : undefined,
+        dateOfBirth: employeeData.dateOfBirth ? new Date(employeeData.dateOfBirth) : undefined,
+      };
+
+      // handle uploaded profile photo
+      if ((req as any).file) {
+        processedData.profilePhotoUrl = `/uploads/${(req as any).file.filename}`;
+      } else if (rawBody.profilePhotoUrl) {
+        processedData.profilePhotoUrl = rawBody.profilePhotoUrl;
+      }
+      console.log('Processed employee data:', processedData);
+      
+      const employee = await dbStorage.createEmployee({
+        ...processedData,
+        id: randomUUID(),
+      });
+  console.log('Created employee:', employee);
+  const resp: any = { employee };
+  if (initialPassword) resp.initialPassword = initialPassword;
+  res.status(201).json(resp);
+    } catch (error) {
+      console.error('Error in POST /api/employees:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid employee data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create employee", error: (error as Error).message });
+      }
+    }
+  });
+
+  app.put("/api/employees/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      // support multipart/form-data upload on update as well
+      // if content-type is multipart, multer will have populated req.body and req.file
+      const rawBody: any = req.body || {};
+      if (rawBody.skills && typeof rawBody.skills === 'string') {
+        try {
+          rawBody.skills = JSON.parse(rawBody.skills);
+        } catch (e) {
+          rawBody.skills = rawBody.skills.split(',').map((s: string) => s.trim()).filter(Boolean);
+        }
+      }
+
+      const employeeData = insertEmployeeSchema.partial().parse(rawBody);
+      
+      // Convert date strings to Date objects if provided
+      const processedData: any = {
+        ...employeeData,
+        joinDate: employeeData.joinDate ? new Date(employeeData.joinDate) : undefined,
+        dateOfBirth: employeeData.dateOfBirth ? new Date(employeeData.dateOfBirth) : undefined
+      };
+
+      if ((req as any).file) {
+        processedData.profilePhotoUrl = `/uploads/${(req as any).file.filename}`;
+      } else if (rawBody.profilePhotoUrl) {
+        processedData.profilePhotoUrl = rawBody.profilePhotoUrl;
+      }
+      const employee = await dbStorage.updateEmployee(req.params.id, processedData);
+      
+      if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      res.json(employee);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid employee data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to update employee" });
+      }
+    }
+  });
+
+  app.delete("/api/employees/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      const deleted = await dbStorage.deleteEmployee(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      
+      res.json({ message: "Employee deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete employee" });
+    }
+  });
+
+  // Attendance routes
+  app.get("/api/attendance", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { employeeId, date } = req.query;
+      
+      // Get user's employee profile
+      const userEmployee = await dbStorage.getEmployeeByUserId(req.user.id);
+      
+      // Employees can only view their own attendance, admins/managers can view any
+      let targetEmployeeId = employeeId as string;
+      if (req.user.role === 'employee') {
+        if (!userEmployee) {
+          return res.status(404).json({ message: "Employee profile not found" });
+        }
+        targetEmployeeId = userEmployee.employeeId; // Force to their own ID
+      } else {
+        targetEmployeeId = employeeId as string || (userEmployee?.employeeId || '');
+      }
+      
+      const targetDate = date ? new Date(date as string) : undefined;
+      
+      const attendance = await dbStorage.getAttendance(targetEmployeeId, targetDate ? 'current' : undefined);
+      res.json(attendance);
+    } catch (error) {
+      res.status(500).json([]);
+    }
+  });
+
+  app.get("/api/attendance/today/:employeeId", authenticateToken, async (req, res) => {
+    try {
+      const attendance = await dbStorage.getTodayAttendance(req.params.employeeId);
+      res.json(attendance);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch today's attendance" });
+    }
+  });
+
+  app.post("/api/attendance/punch-in", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const employee = await dbStorage.getEmployeeByUserId(req.user.id);
+      if (!employee) {
+        return res.status(404).json({ message: "Employee profile not found" });
+      }
+
+      const today = new Date();
+      // Allow multiple punch-in/out per day: fetch latest record and only prevent punch-in
+      // if the latest record for today is still open (no punchOut)
+      const existingAttendance = await dbStorage.getTodayAttendance(employee.employeeId);
+      if (existingAttendance && !existingAttendance.punchOut) {
+        return res.status(400).json({ message: "Already punched in and not punched out yet" });
+      }
+
+      const attendanceData = {
+        employeeId: employee.employeeId,
+        date: today,
+        punchIn: today,
+        punchOut: null,
+        status: "present",
+        totalHours: null
+      };
+
+      const attendance = await dbStorage.createAttendance({
+        ...attendanceData,
+        id: randomUUID(),
+      });
+      res.status(201).json(attendance);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to punch in" });
+    }
+  });
+
+  app.post("/api/attendance/punch-out", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const employee = await dbStorage.getEmployeeByUserId(req.user.id);
+      if (!employee) {
+        return res.status(404).json({ message: "Employee profile not found" });
+      }
+
+      // For punch-out, find the latest open attendance for today and close it
+      const existingAttendance = await dbStorage.getTodayAttendance(employee.employeeId);
+      if (!existingAttendance || !existingAttendance.punchIn) {
+        return res.status(400).json({ message: "Must punch in first" });
+      }
+
+      if (existingAttendance.punchOut) {
+        return res.status(400).json({ message: "No open punch-in found to punch out" });
+      }
+
+      const punchOut = new Date();
+      const totalHours = ((punchOut.getTime() - existingAttendance.punchIn.getTime()) / (1000 * 60 * 60)).toFixed(2);
+
+      const attendance = await dbStorage.updateAttendance(existingAttendance.id, {
+        punchOut,
+        totalHours
+      });
+
+      res.json(attendance);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to punch out" });
+    }
+  });
+
+  // Debug: get all attendance records for today for an employee
+  app.get('/api/attendance/today-all/:employeeId', authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { employeeId } = req.params;
+      // restrict employees to their own records
+      if (req.user.role === 'employee') {
+        const userEmployee = await dbStorage.getEmployeeByUserId(req.user.id);
+        if (!userEmployee || userEmployee.employeeId !== employeeId) {
+          return res.status(403).json({ message: 'Forbidden' });
+        }
+      }
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const records = await dbStorage.getAttendanceByPeriod(today, tomorrow);
+      const filtered = records.filter((r: any) => r.employeeId === employeeId);
+      res.json(filtered);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch today attendance records', error });
+    }
+  });
+
+  // Payroll routes
+  app.get("/api/payroll", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { employeeId, period } = req.query;
+      console.log('GET /api/payroll - Query params:', { employeeId, period });
+      
+      // Get user's employee profile
+      const userEmployee = await dbStorage.getEmployeeByUserId(req.user.id);
+      
+      // Employees can only view their own payroll, admins/managers can view any
+      let targetEmployeeId = employeeId as string;
+      if (req.user.role === 'employee') {
+        if (!userEmployee) {
+          return res.status(404).json({ message: "Employee profile not found" });
+        }
+        targetEmployeeId = userEmployee.employeeId; // Force to their own ID
+      }
+      
+      const payroll = await dbStorage.getPayroll(targetEmployeeId, period as string);
+      console.log('Payroll result:', payroll);
+      res.json(payroll);
+    } catch (error) {
+      console.error('Error in GET /api/payroll:', error);
+      res.status(500).json([]);
+    }
+  });
+
+  app.post("/api/payroll/generate", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      const { period, employeeIds } = req.body;
+      const results = [];
+
+      for (const employeeId of employeeIds) {
+        const employee = await dbStorage.getEmployee(employeeId);
+        if (!employee) continue;
+
+        // Calculate hours worked for the period
+        const [year, month] = period.split('-');
+        const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        const endDate = new Date(parseInt(year), parseInt(month), 0);
+        
+        const attendanceRecords = await dbStorage.getAttendanceByPeriod(startDate, endDate);
+        const employeeAttendance = attendanceRecords.filter(att => att.employeeId === employeeId);
+        
+        const totalHours = employeeAttendance.reduce((sum, att) => {
+          return sum + (parseFloat(att.totalHours || "0"));
+        }, 0);
+
+        // Indian salary structure calculation
+        const annualSalary = parseFloat(employee.salary || "0");
+        const monthlySalary = annualSalary / 12;
+        
+        // Indian salary components
+        const baseSalary = monthlySalary * 0.5; // 50% basic salary
+        const hra = monthlySalary * 0.25; // 25% HRA
+        const transportAllowance = Math.min(1600, monthlySalary * 0.1); // Transport allowance (max ₹1600)
+        const medicalAllowance = Math.min(1250, monthlySalary * 0.05); // Medical allowance (max ₹1250)
+        const otherAllowances = monthlySalary - baseSalary - hra - transportAllowance - medicalAllowance;
+        
+        // Indian deductions
+        const providentFund = baseSalary * 0.12; // 12% of basic salary for PF
+        const employeeStateInsurance = monthlySalary <= 21000 ? monthlySalary * 0.0075 : 0; // ESI 0.75% if salary ≤ ₹21,000
+        const professionalTax = monthlySalary > 10000 ? 200 : 0; // Professional tax ₹200 if salary > ₹10,000
+        // Calculate annual taxable income and TDS based on new tax regime
+        const annualTaxableIncome = (baseSalary + otherAllowances) * 12; // Basic + Special Allowance
+        let annualTax = 0;
+        
+        if (annualTaxableIncome > 1500000) {
+          annualTax += (annualTaxableIncome - 1500000) * 0.3;
+          annualTax += 300000 * 0.2;
+          annualTax += 300000 * 0.15;
+          annualTax += 300000 * 0.1;
+          annualTax += 300000 * 0.05;
+        } else if (annualTaxableIncome > 1200000) {
+          annualTax += (annualTaxableIncome - 1200000) * 0.2;
+          annualTax += 300000 * 0.15;
+          annualTax += 300000 * 0.1;
+          annualTax += 300000 * 0.05;
+        } else if (annualTaxableIncome > 900000) {
+          annualTax += (annualTaxableIncome - 900000) * 0.15;
+          annualTax += 300000 * 0.1;
+          annualTax += 300000 * 0.05;
+        } else if (annualTaxableIncome > 600000) {
+          annualTax += (annualTaxableIncome - 600000) * 0.1;
+          annualTax += 300000 * 0.05;
+        } else if (annualTaxableIncome > 300000) {
+          annualTax += (annualTaxableIncome - 300000) * 0.05;
+        }
+
+        // Monthly TDS is annual tax divided by 12
+        const incomeTax = annualTax / 12;
+        const otherDeductions = 0;
+        
+        const grossPay = baseSalary + hra + transportAllowance + medicalAllowance + otherAllowances;
+        const totalDeductions = providentFund + employeeStateInsurance + professionalTax + incomeTax + otherDeductions;
+        const netPay = grossPay - totalDeductions;
+
+        const payrollData = {
+          employeeId,
+          month: parseInt(month),
+          year: parseInt(year),
+          basicSalary: baseSalary.toString(),
+          hra: hra.toString(),
+          transportAllowance: transportAllowance.toString(),
+          medicalAllowance: medicalAllowance.toString(),
+          otherAllowances: otherAllowances.toString(),
+          grossSalary: grossPay.toString(),
+          providentFund: providentFund.toString(),
+          esi: employeeStateInsurance.toString(),
+          professionalTax: professionalTax.toString(),
+          incomeTax: incomeTax.toString(),
+          totalDeductions: totalDeductions.toString(),
+          netSalary: netPay.toString(),
+          status: "pending"
+        };
+
+        const payroll = await dbStorage.createPayroll({
+          ...payrollData,
+          id: randomUUID(),
+        });
+        results.push(payroll);
+      }
+
+      res.status(201).json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate payroll" });
+    }
+  });
+
+  // Dashboard stats
+  app.get("/api/dashboard/stats", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      // Only admins and managers can view full dashboard stats
+      if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+        // For employees, return limited stats
+        const userEmployee = await dbStorage.getEmployeeByUserId(req.user.id);
+        if (!userEmployee) {
+          return res.status(404).json({ message: "Employee profile not found" });
+        }
+        
+        const todayAttendance = await dbStorage.getTodayAttendance(userEmployee.employeeId);
+        const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        const userPayroll = await dbStorage.getPayroll(userEmployee.employeeId, currentMonth);
+        const totalPayroll = userPayroll.reduce((sum, pay) => sum + parseFloat(pay.netSalary), 0);
+        
+        return res.json({
+          totalEmployees: 1, // Only show their own count
+          presentToday: todayAttendance ? 1 : 0,
+          onLeave: 0,
+          payrollDue: totalPayroll,
+          attendanceRate: todayAttendance ? 100 : 0
+        });
+      }
+      
+      const employees = await dbStorage.getEmployees();
+      const today = new Date();
+      const todayStr = today.toDateString();
+      
+      // Get today's attendance data - for now using empty array as mock
+      // In a real implementation, this would query the attendance table for today
+      const todayAttendance: any[] = [];
+
+      const presentToday = todayAttendance.filter((att: any) => att.status === 'present').length;
+      const onLeave = employees.filter(emp => emp.status === 'inactive').length;
+      
+      const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+      const monthlyPayroll = await dbStorage.getPayrollByPeriod(currentMonth);
+      const totalPayroll = monthlyPayroll.reduce((sum, pay) => sum + parseFloat(pay.netSalary), 0);
+
+      res.json({
+        totalEmployees: employees.length,
+        presentToday,
+        onLeave,
+        payrollDue: totalPayroll,
+        attendanceRate: employees.length > 0 ? ((presentToday / employees.length) * 100).toFixed(1) : 0
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

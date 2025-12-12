@@ -1,0 +1,25 @@
+                                                               Table "public.attendance"
+   Column    |            Type             | Collation | Nullable |           Default            | Storage  | Compression | Stats target | Description 
+-------------+-----------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-------------
+ id          | character varying(36)       |           | not null | uuid_generate_v4()           | extended |             |              | 
+ employee_id | character varying(50)       |           | not null |                              | extended |             |              | 
+ date        | timestamp without time zone |           | not null |                              | plain    |             |              | 
+ punch_in    | timestamp without time zone |           |          |                              | plain    |             |              | 
+ punch_out   | timestamp without time zone |           |          |                              | plain    |             |              | 
+ total_hours | numeric(5,2)                |           |          |                              | main     |             |              | 
+ status      | character varying(20)       |           |          | 'present'::character varying | extended |             |              | 
+ notes       | text                        |           |          |                              | extended |             |              | 
+ location    | jsonb                       |           |          |                              | extended |             |              | 
+ created_at  | timestamp without time zone |           |          | now()                        | plain    |             |              | 
+ updated_at  | timestamp without time zone |           |          | now()                        | plain    |             |              | 
+Indexes:
+    "attendance_pkey" PRIMARY KEY, btree (id)
+    "idx_attendance_date" btree (date)
+    "idx_attendance_employee_id" btree (employee_id)
+    "idx_attendance_status" btree (status)
+Referenced by:
+    TABLE "gps_locations" CONSTRAINT "gps_locations_attendance_id_fkey" FOREIGN KEY (attendance_id) REFERENCES attendance(id)
+Triggers:
+    update_attendance_updated_at BEFORE UPDATE ON attendance FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+Access method: heap
+

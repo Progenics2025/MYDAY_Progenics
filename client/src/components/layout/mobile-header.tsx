@@ -1,4 +1,5 @@
 import { Menu, Bell, Settings, LogOut, Briefcase } from "lucide-react";
+import LogoutConfirm from "@/components/LogoutConfirm";
 import { useAuthState } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +17,9 @@ interface MobileHeaderProps {
 
 export default function MobileHeader({ onMenuClick, title }: MobileHeaderProps) {
   const { user } = useAuthState();
+  const { employee } = useAuthState();
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    window.location.reload();
-  };
+  // Logout handled by centralized `logout` via LogoutConfirm
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -65,11 +64,15 @@ export default function MobileHeader({ onMenuClick, title }: MobileHeaderProps) 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-                  </span>
-                </div>
+                {employee?.profilePhotoUrl ? (
+                  <img src={employee.profilePhotoUrl} alt="profile" className="h-8 w-8 rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+                    </span>
+                  </div>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -87,13 +90,14 @@ export default function MobileHeader({ onMenuClick, title }: MobileHeaderProps) 
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="cursor-pointer text-red-600 focus:text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
+              <LogoutConfirm
+                trigger={
+                  <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                }
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

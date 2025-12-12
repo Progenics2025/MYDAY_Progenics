@@ -1,0 +1,3540 @@
+nohup: ignoring input
+
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+[dotenv@17.2.2] injecting env (12) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Server running on http://localhost:5001
+DEBUG /api/auth/login body: { username: 'admin', password: 'admin123' }
+DEBUG loginSchema.safeParse: { success: true, data: { username: 'admin', password: 'admin123' } }
+3:31:02 PM [express] POST /api/auth/login 200 in 26ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f…
+DEBUG authenticateToken token: cq87790h7yomfxtdebc
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 1
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG /api/profile GET headers: Bearer cq87790h7yomfxtdebc
+DEBUG /api/profile GET user before auth: {
+  id: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+  username: 'admin',
+  password: 'admin123',
+  email: 'admin@company.com',
+  name: 'John Doe',
+  role: 'admin',
+  createdAt: 2025-09-05T16:17:34.946Z,
+  updatedAt: 2025-09-22T15:54:53.483Z,
+  employee: {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  }
+}
+DEBUG /api/profile GET resolved userId: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:31:11 PM [express] GET /api/profile 200 in 2ms :: {"phoneNumber":null,"emergencyContact":null,"add…
+3:31:57 PM [express] POST /api/auth/logout 200 in 1ms :: {"message":"Logged out successfully"}
+DEBUG /api/auth/login body: { username: 'admin', password: 'admin123' }
+DEBUG loginSchema.safeParse: { success: true, data: { username: 'admin', password: 'admin123' } }
+3:32:07 PM [express] POST /api/auth/login 200 in 11ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 304 in 5ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DB getEmployees result: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  }
+]
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/dashboard/stats 200 in 20ms :: {"totalEmployees":7,"presentToday":0,"o…
+3:32:07 PM [express] GET /api/auth/me 304 in 7ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+3:32:07 PM [express] GET /api/notify/leave-requests/me 200 in 27ms :: {"items":[{"id":"3e34f22b-ece8…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+3:32:07 PM [express] GET /api/notify/leave-requests/list 304 in 3ms :: {"items":[{"id":"871721bf-928…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:32:07 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: ckzc6cdmx5omfxtes63
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+GET /api/employees - Query params: {
+  search: undefined,
+  department: undefined,
+  role: undefined,
+  status: undefined
+}
+User: {
+  id: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+  username: 'admin',
+  password: 'admin123',
+  email: 'admin@company.com',
+  name: 'John Doe',
+  role: 'admin',
+  createdAt: 2025-09-05T16:17:34.946Z,
+  updatedAt: 2025-09-22T15:54:53.483Z,
+  employee: {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  }
+}
+Getting all employees
+DB getEmployees result: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  }
+]
+Found employees: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  }
+]
+3:32:11 PM [express] GET /api/employees 304 in 5ms :: [{"id":"48d34a29-cac1-49f8-b6b0-80ace4f73f7c",…
+3:32:19 PM [express] POST /api/auth/logout 200 in 0ms :: {"message":"Logged out successfully"}
+DEBUG /api/auth/login body: { username: 'doejohn@gmail.com', password: 'zcx52prqewA1! ' }
+DEBUG loginSchema.safeParse: {
+  success: true,
+  data: { username: 'doejohn@gmail.com', password: 'zcx52prqewA1! ' }
+}
+3:32:45 PM [express] POST /api/auth/login 401 in 9ms :: {"message":"Invalid credentials"}
+DEBUG /api/auth/login body: { username: 'doejohn@gmail.com', password: 'zcx52prqewA1!' }
+DEBUG loginSchema.safeParse: {
+  success: true,
+  data: { username: 'doejohn@gmail.com', password: 'zcx52prqewA1!' }
+}
+3:32:59 PM [express] POST /api/auth/login 200 in 11ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a3…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 200 in 3ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/notify/leave-requests/me 200 in 15ms :: {"items":[],"total":0,"page":1…
+3:32:59 PM [express] GET /api/auth/me 304 in 3ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+3:32:59 PM [express] GET /api/dashboard/stats 200 in 18ms :: {"totalEmployees":1,"presentToday":0,"o…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 304 in 3ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:32:59 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+DEBUG authenticateToken token: h5n6n7qs9ljmfxtfw38
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 2
+DEBUG authenticateToken sessionUser: aefb15e8-f084-4902-8a1f-29a351dc221c
+DEBUG /api/profile GET headers: Bearer h5n6n7qs9ljmfxtfw38
+DEBUG /api/profile GET user before auth: {
+  id: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+  username: 'doejohn@gmail.com',
+  password: 'zcx52prqewA1!',
+  email: 'doejohn@gmail.com',
+  name: 'John Doe',
+  role: 'employee',
+  createdAt: 2025-09-24T12:45:02.347Z,
+  updatedAt: 2025-09-24T12:45:02.347Z,
+  employee: {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  }
+}
+DEBUG /api/profile GET resolved userId: aefb15e8-f084-4902-8a1f-29a351dc221c
+3:33:00 PM [express] GET /api/profile 200 in 1ms :: {"phoneNumber":"7894561232","emergencyContact":"…
+3:33:00 PM [express] GET /api/auth/me 304 in 3ms :: {"user":{"id":"aefb15e8-f084-4902-8a1f-29a351dc2…
+DEBUG /api/auth/login body: { username: 'admin', password: 'admin123' }
+DEBUG loginSchema.safeParse: { success: true, data: { username: 'admin', password: 'admin123' } }
+3:36:07 PM [express] POST /api/auth/login 200 in 8ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7…
+DEBUG authenticateToken token: 0jg0g5arwf9hmfxtjx7v
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 3
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+POST /api/employees - Request body: [Object: null prototype] {
+  employeeId: 'EMP9999',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test.user+api@example.com',
+  department: 'QA',
+  role: 'Tester',
+  joinDate: '2025-09-24',
+  skills: '["testing","automation"]'
+}
+Error in POST /api/employees: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "code": "invalid_type",
+            "expected": "string",
+            "received": "undefined",
+            "path": [
+              "salary"
+            ],
+            "message": "Required"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "code": "invalid_type",
+            "expected": "number",
+            "received": "undefined",
+            "path": [
+              "salary"
+            ],
+            "message": "Required"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "salary"
+    ],
+    "message": "Invalid input"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "address"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "emergencyContact"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "panNumber"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "aadhaarNumber"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "uanNumber"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "esicNumber"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "bankAccount"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "ifscCode"
+    ],
+    "message": "Required"
+  }
+]
+    at get error [as error] (file:///home/progenics-bioinfo/MyDay/myDay/node_modules/zod/lib/index.mjs:587:31)
+    at ZodObject.parse (file:///home/progenics-bioinfo/MyDay/myDay/node_modules/zod/lib/index.mjs:663:22)
+    at <anonymous> (/home/progenics-bioinfo/MyDay/myDay/server/routes.ts:274:49)
+    at Layer.handle [as handle_request] (/home/progenics-bioinfo/MyDay/myDay/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/progenics-bioinfo/MyDay/myDay/node_modules/express/lib/router/route.js:149:13)
+    at done (/home/progenics-bioinfo/MyDay/myDay/node_modules/multer/lib/make-middleware.js:59:7)
+    at indicateDone (/home/progenics-bioinfo/MyDay/myDay/node_modules/multer/lib/make-middleware.js:63:68)
+    at Multipart.<anonymous> (/home/progenics-bioinfo/MyDay/myDay/node_modules/multer/lib/make-middleware.js:187:7)
+    at Multipart.emit (node:events:524:28)
+    at emitCloseNT (node:internal/streams/destroy:147:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:81:21) {
+  issues: [
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_union',
+      unionErrors: [Array],
+      path: [Array],
+      message: 'Invalid input'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    }
+  ],
+  addIssue: [Function (anonymous)],
+  addIssues: [Function (anonymous)],
+  errors: [
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_union',
+      unionErrors: [Array],
+      path: [Array],
+      message: 'Invalid input'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    }
+  ]
+}
+3:36:19 PM [express] POST /api/employees 400 in 11ms :: {"message":"Invalid employee data","errors":…
+DEBUG authenticateToken token: 0jg0g5arwf9hmfxtjx7v
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 3
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+POST /api/employees - Request body: [Object: null prototype] {
+  employeeId: 'EMP9999',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test.user+api@example.com',
+  phone: '9876543210',
+  department: 'QA',
+  role: 'Tester',
+  salary: '10000',
+  basicSalary: '8000',
+  hra: '1000',
+  transportAllowance: '200',
+  medicalAllowance: '100',
+  otherAllowances: '700',
+  joinDate: '2025-09-24',
+  address: 'Test address',
+  dateOfBirth: '1990-01-01',
+  emergencyContact: '9876501234',
+  panNumber: 'ABCDE1234F',
+  aadhaarNumber: '123412341234',
+  uanNumber: '123412341234',
+  esicNumber: 'ESIC12345',
+  bankAccount: '123456789012',
+  ifscCode: 'SBIN0000001',
+  skills: '["testing","automation"]'
+}
+Parsed employee data: {
+  employeeId: 'EMP9999',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test.user+api@example.com',
+  phone: '9876543210',
+  department: 'QA',
+  role: 'Tester',
+  salary: '10000',
+  basicSalary: '8000',
+  hra: '1000',
+  transportAllowance: '200',
+  medicalAllowance: '100',
+  otherAllowances: '700',
+  joinDate: '2025-09-24',
+  status: 'active',
+  address: 'Test address',
+  dateOfBirth: '1990-01-01',
+  emergencyContact: '9876501234',
+  panNumber: 'ABCDE1234F',
+  aadhaarNumber: '123412341234',
+  uanNumber: '123412341234',
+  esicNumber: 'ESIC12345',
+  bankAccount: '123456789012',
+  ifscCode: 'SBIN0000001',
+  skills: [ 'testing', 'automation' ]
+}
+Resolving user for email: test.user+api@example.com
+No existing user found; creating new user...
+Created new user: {
+  id: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+  username: 'test.user+api@example.com',
+  password: 'k2raie4gdkA1!',
+  email: 'test.user+api@example.com',
+  name: 'Test User',
+  role: 'employee',
+  createdAt: 2025-09-24T15:36:28.516Z,
+  updatedAt: 2025-09-24T15:36:28.516Z
+}
+Processed employee data: {
+  employeeId: 'EMP9999',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test.user+api@example.com',
+  phone: '9876543210',
+  department: 'QA',
+  role: 'Tester',
+  salary: '10000',
+  basicSalary: '8000',
+  hra: '1000',
+  transportAllowance: '200',
+  medicalAllowance: '100',
+  otherAllowances: '700',
+  joinDate: 2025-09-24T00:00:00.000Z,
+  status: 'active',
+  address: 'Test address',
+  dateOfBirth: 1990-01-01T00:00:00.000Z,
+  emergencyContact: '9876501234',
+  panNumber: 'ABCDE1234F',
+  aadhaarNumber: '123412341234',
+  uanNumber: '123412341234',
+  esicNumber: 'ESIC12345',
+  bankAccount: '123456789012',
+  ifscCode: 'SBIN0000001',
+  skills: [ 'testing', 'automation' ],
+  userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1'
+}
+Created employee: {
+  id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+  userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+  employeeId: 'EMP9999',
+  firstName: 'Test',
+  lastName: 'User',
+  email: 'test.user+api@example.com',
+  phone: '9876543210',
+  department: 'QA',
+  role: 'Tester',
+  salary: '10000.00',
+  basicSalary: '8000.00',
+  hra: '1000.00',
+  transportAllowance: '200.00',
+  medicalAllowance: '100.00',
+  otherAllowances: '700.00',
+  joinDate: 2025-09-24T00:00:00.000Z,
+  status: 'active',
+  address: 'Test address',
+  dateOfBirth: 1990-01-01T00:00:00.000Z,
+  emergencyContact: '9876501234',
+  bloodGroup: null,
+  maritalStatus: null,
+  skills: [ 'testing', 'automation' ],
+  profilePhotoUrl: null,
+  panNumber: 'ABCDE1234F',
+  aadhaarNumber: '123412341234',
+  uanNumber: '123412341234',
+  esicNumber: 'ESIC12345',
+  bankAccount: '123456789012',
+  ifscCode: 'SBIN0000001',
+  createdAt: 2025-09-24T15:36:28.526Z,
+  updatedAt: 2025-09-24T15:36:28.526Z
+}
+3:36:28 PM [express] POST /api/employees 201 in 30ms :: {"employee":{"id":"ced73f33-90dc-4624-982f-e…
+DEBUG /api/auth/login body: { username: 'test.user+api@example.com', password: 'k2raie4gdkA1!' }
+DEBUG loginSchema.safeParse: {
+  success: true,
+  data: { username: 'test.user+api@example.com', password: 'k2raie4gdkA1!' }
+}
+3:36:44 PM [express] POST /api/auth/login 200 in 8ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545…
+DEBUG authenticateToken token: fd3o0q4h17lmfxtkq84
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+DEBUG /api/profile GET headers: Bearer fd3o0q4h17lmfxtkq84
+DEBUG /api/profile GET user before auth: {
+  id: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+  username: 'test.user+api@example.com',
+  password: 'k2raie4gdkA1!',
+  email: 'test.user+api@example.com',
+  name: 'Test User',
+  role: 'employee',
+  createdAt: 2025-09-24T15:36:28.516Z,
+  updatedAt: 2025-09-24T15:36:28.516Z,
+  employee: {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+}
+DEBUG /api/profile GET resolved userId: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:36:55 PM [express] GET /api/profile 200 in 1ms :: {"phoneNumber":"9876543210","emergencyContact":"…
+3:37:40 PM [express] POST /api/auth/logout 200 in 0ms :: {"message":"Logged out successfully"}
+DEBUG /api/auth/login body: { username: 'admin', password: 'admin123' }
+DEBUG loginSchema.safeParse: { success: true, data: { username: 'admin', password: 'admin123' } }
+3:37:46 PM [express] POST /api/auth/login 200 in 9ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DB getEmployees result: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  },
+  {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+]
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/dashboard/stats 200 in 17ms :: {"totalEmployees":8,"presentToday":0,"o…
+3:37:46 PM [express] GET /api/auth/me 304 in 3ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+3:37:46 PM [express] GET /api/notify/leave-requests/me 200 in 21ms :: {"items":[{"id":"3e34f22b-ece8…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 304 in 3ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:37:46 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+3:37:46 PM [express] GET /api/notify/leave-requests/list 304 in 1ms :: {"items":[{"id":"871721bf-928…
+DEBUG authenticateToken token: 6k4rv0w1fdlmfxtm1vs
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+GET /api/employees - Query params: {
+  search: undefined,
+  department: undefined,
+  role: undefined,
+  status: undefined
+}
+User: {
+  id: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+  username: 'admin',
+  password: 'admin123',
+  email: 'admin@company.com',
+  name: 'John Doe',
+  role: 'admin',
+  createdAt: 2025-09-05T16:17:34.946Z,
+  updatedAt: 2025-09-22T15:54:53.483Z,
+  employee: {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  }
+}
+Getting all employees
+DB getEmployees result: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  },
+  {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+]
+Found employees: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  },
+  {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+]
+3:37:53 PM [express] GET /api/employees 200 in 3ms :: [{"id":"48d34a29-cac1-49f8-b6b0-80ace4f73f7c",…
+3:38:17 PM [express] POST /api/auth/logout 200 in 1ms :: {"message":"Logged out successfully"}
+DEBUG /api/auth/login body: { username: 'test.user+api@example.com', password: 'k2raie4gdkA1!' }
+DEBUG loginSchema.safeParse: {
+  success: true,
+  data: { username: 'test.user+api@example.com', password: 'k2raie4gdkA1!' }
+}
+3:38:35 PM [express] POST /api/auth/login 200 in 12ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-0654…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/notify/leave-requests/me 200 in 23ms :: {"items":[],"total":0,"page":1…
+3:38:35 PM [express] GET /api/dashboard/stats 200 in 22ms :: {"totalEmployees":1,"presentToday":0,"o…
+3:38:35 PM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:35 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+DEBUG authenticateToken token: 987be54ecesmfxtn36j
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+DEBUG /api/profile GET headers: Bearer 987be54ecesmfxtn36j
+DEBUG /api/profile GET user before auth: {
+  id: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+  username: 'test.user+api@example.com',
+  password: 'k2raie4gdkA1!',
+  email: 'test.user+api@example.com',
+  name: 'Test User',
+  role: 'employee',
+  createdAt: 2025-09-24T15:36:28.516Z,
+  updatedAt: 2025-09-24T15:36:28.516Z,
+  employee: {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+}
+DEBUG /api/profile GET resolved userId: 8d3c6cd0-0a42-4e09-9031-06545e23a8b1
+3:38:36 PM [express] GET /api/profile 200 in 0ms :: {"phoneNumber":"9876543210","emergencyContact":"…
+3:38:36 PM [express] GET /api/auth/me 304 in 2ms :: {"user":{"id":"8d3c6cd0-0a42-4e09-9031-06545e23a…
+3:38:56 PM [express] POST /api/auth/logout 200 in 0ms :: {"message":"Logged out successfully"}
+DEBUG /api/auth/login body: { username: 'admin', password: 'admin123' }
+DEBUG loginSchema.safeParse: { success: true, data: { username: 'admin', password: 'admin123' } }
+3:39:02 PM [express] POST /api/auth/login 200 in 10ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/auth/me 200 in 2ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DB getEmployees result: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  },
+  {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+]
+3:39:02 PM [express] GET /api/auth/me 304 in 3ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+3:39:02 PM [express] GET /api/dashboard/stats 200 in 15ms :: {"totalEmployees":8,"presentToday":0,"o…
+3:39:02 PM [express] GET /api/notify/leave-requests/me 200 in 17ms :: {"items":[{"id":"3e34f22b-ece8…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/notify/leave-requests/list 304 in 3ms :: {"items":[{"id":"871721bf-928…
+3:39:02 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:39:02 PM [express] GET /api/auth/me 304 in 1ms :: {"user":{"id":"9f5e2f68-7117-4708-a20b-f34f7bed5…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+GET /api/employees - Query params: {
+  search: undefined,
+  department: undefined,
+  role: undefined,
+  status: undefined
+}
+User: {
+  id: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+  username: 'admin',
+  password: 'admin123',
+  email: 'admin@company.com',
+  name: 'John Doe',
+  role: 'admin',
+  createdAt: 2025-09-05T16:17:34.946Z,
+  updatedAt: 2025-09-22T15:54:53.483Z,
+  employee: {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  }
+}
+Getting all employees
+DB getEmployees result: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  },
+  {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+]
+Found employees: [
+  {
+    id: '48d34a29-cac1-49f8-b6b0-80ace4f73f7c',
+    userId: '9f5e2f68-7117-4708-a20b-f34f7bed5fd6',
+    employeeId: 'EMP001',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'admin@company.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '75000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2023-01-15T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-05T16:17:57.752Z,
+    updatedAt: 2025-09-05T16:17:57.752Z
+  },
+  {
+    id: '5c223855-7583-413e-b8a9-2835dea5bab2',
+    userId: '6ca11d36-2280-4bbc-a044-e93c7ab342d9',
+    employeeId: 'EMP0046',
+    firstName: 'Guna',
+    lastName: 'Akhil',
+    email: 'digitalsales@progenics.com',
+    phone: null,
+    department: 'IT',
+    role: 'Developer',
+    salary: '120000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 1995-07-13T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'AKH15HI82',
+    aadhaarNumber: '336929351541',
+    uanNumber: 'no',
+    esicNumber: 'no',
+    bankAccount: 'no',
+    ifscCode: 'no',
+    createdAt: 2025-09-08T18:12:08.078Z,
+    updatedAt: 2025-09-08T18:12:08.078Z
+  },
+  {
+    id: '2e9ab739-d014-4fea-a76e-17f604608909',
+    userId: 'b35cf75f-25e5-430f-ab50-acd9205e6eb7',
+    employeeId: 'MGR001',
+    firstName: 'Alice',
+    lastName: 'Manager',
+    email: 'alice.manager@example.com',
+    phone: null,
+    department: 'HR',
+    role: 'Manager',
+    salary: '90000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-15T17:05:54.813Z,
+    updatedAt: 2025-09-15T17:05:54.813Z
+  },
+  {
+    id: '9f68fb3f-6532-4719-bdfc-becfbbaf41db',
+    userId: 'f236bbfe-621b-415c-9f33-3b8dab425e79',
+    employeeId: 'AUTO123',
+    firstName: 'Auto',
+    lastName: 'Tester',
+    email: 'test.emp+autotest@example.com',
+    phone: null,
+    department: 'Engineering',
+    role: 'employee',
+    salary: null,
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-01-01T00:00:00.000Z,
+    status: 'active',
+    address: null,
+    dateOfBirth: null,
+    emergencyContact: null,
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: null,
+    aadhaarNumber: null,
+    uanNumber: null,
+    esicNumber: null,
+    bankAccount: null,
+    ifscCode: null,
+    createdAt: 2025-09-16T14:35:30.541Z,
+    updatedAt: 2025-09-16T14:35:30.541Z
+  },
+  {
+    id: 'a4fda263-1715-40e9-b136-e0e152ece602',
+    userId: '74789df8-8de2-46fe-9c10-a53d40c8b28d',
+    employeeId: 'EMP0023',
+    firstName: 'Gogula',
+    lastName: 'Uday Kiran',
+    email: 'gogulaudaykiran2204@gmail.com',
+    phone: '9966960202',
+    department: 'IT',
+    role: 'Developer',
+    salary: '72000.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-07-14T00:00:00.000Z,
+    status: 'active',
+    address: 'Srikakulam,Kottur mandal,4-22, rajaveedhi.',
+    dateOfBirth: 2002-05-23T00:00:00.000Z,
+    emergencyContact: '7675050081',
+    bloodGroup: 'O+',
+    maritalStatus: 'single',
+    skills: null,
+    profilePhotoUrl: null,
+    panNumber: 'DGSP3994J',
+    aadhaarNumber: '336929351571',
+    uanNumber: '',
+    esicNumber: '',
+    bankAccount: '',
+    ifscCode: '',
+    createdAt: 2025-09-08T17:57:08.109Z,
+    updatedAt: 2025-09-23T12:08:50.043Z
+  },
+  {
+    id: 'ded8afbf-32b1-4a1e-8487-2cff3609f2d3',
+    userId: '635a912c-02f8-4c37-9a05-c3087d026a7e',
+    employeeId: 'EMP0034',
+    firstName: 'Xavier',
+    lastName: 'Alex',
+    email: 'alexxavier2@gmail.com',
+    phone: '9696325222',
+    department: 'Operations',
+    role: 'Administrator',
+    salary: '89565.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2025-09-22T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road',
+    dateOfBirth: 2001-10-24T00:00:00.000Z,
+    emergencyContact: '6996965455',
+    bloodGroup: 'AB+',
+    maritalStatus: 'Married',
+    skills: [ 'conusellor' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPG4499J',
+    aadhaarNumber: '336929391571',
+    uanNumber: '122547889358',
+    esicNumber: '546873178645987',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0000360',
+    createdAt: 2025-09-24T12:30:44.140Z,
+    updatedAt: 2025-09-24T12:31:57.834Z
+  },
+  {
+    id: '1d779b92-44c3-4c87-be41-016043116069',
+    userId: 'aefb15e8-f084-4902-8a1f-29a351dc221c',
+    employeeId: 'EMP0045',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'doejohn@gmail.com',
+    phone: '7894561232',
+    department: 'Sales',
+    role: 'Developer',
+    salary: '78945.00',
+    basicSalary: null,
+    hra: null,
+    transportAllowance: null,
+    medicalAllowance: null,
+    otherAllowances: null,
+    joinDate: 2014-05-24T00:00:00.000Z,
+    status: 'active',
+    address: 'suchitra x road,jains',
+    dateOfBirth: 2002-07-24T00:00:00.000Z,
+    emergencyContact: '0321456987',
+    bloodGroup: 'B-',
+    maritalStatus: 'Married',
+    skills: [ 'react', 'nodesql', 'mysql' ],
+    profilePhotoUrl: null,
+    panNumber: 'DGSPH3994J',
+    aadhaarNumber: '988774455550',
+    uanNumber: '654987448971',
+    esicNumber: '36985214785',
+    bankAccount: '78954741255',
+    ifscCode: 'SBIN0003060',
+    createdAt: 2025-09-24T12:45:02.372Z,
+    updatedAt: 2025-09-24T12:45:38.181Z
+  },
+  {
+    id: 'ced73f33-90dc-4624-982f-ec1d847e3284',
+    userId: '8d3c6cd0-0a42-4e09-9031-06545e23a8b1',
+    employeeId: 'EMP9999',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test.user+api@example.com',
+    phone: '9876543210',
+    department: 'QA',
+    role: 'Tester',
+    salary: '10000.00',
+    basicSalary: '8000.00',
+    hra: '1000.00',
+    transportAllowance: '200.00',
+    medicalAllowance: '100.00',
+    otherAllowances: '700.00',
+    joinDate: 2025-09-24T00:00:00.000Z,
+    status: 'active',
+    address: 'Test address',
+    dateOfBirth: 1990-01-01T00:00:00.000Z,
+    emergencyContact: '9876501234',
+    bloodGroup: null,
+    maritalStatus: null,
+    skills: [ 'testing', 'automation' ],
+    profilePhotoUrl: null,
+    panNumber: 'ABCDE1234F',
+    aadhaarNumber: '123412341234',
+    uanNumber: '123412341234',
+    esicNumber: 'ESIC12345',
+    bankAccount: '123456789012',
+    ifscCode: 'SBIN0000001',
+    createdAt: 2025-09-24T15:36:28.526Z,
+    updatedAt: 2025-09-24T15:36:28.526Z
+  }
+]
+3:39:05 PM [express] GET /api/employees 304 in 2ms :: [{"id":"48d34a29-cac1-49f8-b6b0-80ace4f73f7c",…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:40:33 PM [express] PUT /api/employees/ced73f33-90dc-4624-982f-ec1d847e3284 500 in 9ms :: {"message…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:40:41 PM [express] PUT /api/employees/ced73f33-90dc-4624-982f-ec1d847e3284 500 in 2ms :: {"message…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:40:57 PM [express] PUT /api/employees/ded8afbf-32b1-4a1e-8487-2cff3609f2d3 500 in 8ms :: {"message…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:45:58 PM [express] PUT /api/employees/ced73f33-90dc-4624-982f-ec1d847e3284 500 in 10ms :: {"messag…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:46:02 PM [express] PUT /api/employees/ced73f33-90dc-4624-982f-ec1d847e3284 500 in 3ms :: {"message…
+DEBUG authenticateToken token: uyawy5crp1mfxtnoeh
+DEBUG authenticateToken hasToken: true
+DEBUG authenticateToken sessions size: 4
+DEBUG authenticateToken sessionUser: 9f5e2f68-7117-4708-a20b-f34f7bed5fd6
+3:47:04 PM [express] PUT /api/employees/ced73f33-90dc-4624-982f-ec1d847e3284 500 in 7ms :: {"message…

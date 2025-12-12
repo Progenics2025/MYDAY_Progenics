@@ -28,8 +28,21 @@ const profileSchema = z.object({
   emergencyContact: z.string().optional(),
   address: z.string().optional(),
   dateOfBirth: z.string().optional(),
+  gender: z.string().optional(),
   bloodGroup: z.string().optional(),
   maritalStatus: z.string().optional(),
+  department: z.string().optional(),
+  role: z.string().optional(),
+  uanNumber: z.preprocess((v) => {
+    if (v === '' || v == null) return undefined;
+    if (typeof v === 'string' && v.trim().toUpperCase() === 'NA') return undefined;
+    return typeof v === 'string' ? v.trim() : v;
+  }, z.string().regex(/^\d{12}$/, 'UAN must be 12 digits').optional()),
+  esicNumber: z.preprocess((v) => {
+    if (v === '' || v == null) return undefined;
+    if (typeof v === 'string' && v.trim().toUpperCase() === 'NA') return undefined;
+    return typeof v === 'string' ? v.trim() : v;
+  }, z.string().regex(/^[A-Za-z0-9-]{6,17}$/, 'ESIC must be 6-17 characters').optional()),
   skills: z.array(z.string()).optional(),
   education: z.array(z.string()).optional(),
   experience: z.array(z.string()).optional(),
@@ -37,22 +50,90 @@ const profileSchema = z.object({
 
 router.post('/', upload.single('photo'), async (req: AuthRequest, res) => {
   try {
-    const data = profileSchema.parse(req.body);
-    const employeeId = req.user?.id;
-    
-    if (!employeeId) {
-      return res.status(401).json({ message: 'Unauthorized' });
+    console.log('DEBUG /api/profile POST headers:', req.headers.authorization);
+    console.log('DEBUG /api/profile POST user:', req.user);
+    // When multipart/form-data is used, req.body fields may be strings; coerce arrays and parse JSON strings
+    const raw: any = { ...(req.body || {}) };
+    if (raw.skills && typeof raw.skills === 'string') {
+      try { raw.skills = JSON.parse(raw.skills); } catch (e) { raw.skills = String(raw.skills).split(',').map((s: string) => s.trim()).filter(Boolean); }
+    }
+    if (raw.education && typeof raw.education === 'string') {
+      try { raw.education = JSON.parse(raw.education); } catch (e) { raw.education = [raw.education]; }
+    }
+    if (raw.experience && typeof raw.experience === 'string') {
+      try { raw.experience = JSON.parse(raw.experience); } catch (e) { raw.experience = [raw.experience]; }
     }
 
-    // Create or update profile
-    const profile = await dbStorage.updateEmployeeProfile({
-      ...data,
-      employeeId,
-      photo: req.file?.path,
+    const data = profileSchema.parse(raw);
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    // Prefer the session-stored employee if available (login sets this), otherwise fall back to DB lookup and scans
+    let employee = (req.user as any)?.employee;
+    console.log('DEBUG /api/profile POST initial session employee present:', !!employee, employee && (employee as any).employeeId);
+
+    if (!employee) {
+      employee = await dbStorage.getEmployeeByUserId(userId);
+      console.log('DEBUG /api/profile POST lookup - by userId result:', !!employee, employee && (employee as any).employeeId);
+    }
+
+    // Still not found? try scanning all employees (some dev setups may not have direct mapping)
+    if (!employee) {
+      try {
+        const all = await dbStorage.getEmployees();
+        console.log('DEBUG /api/profile POST scanning all employees, count:', Array.isArray(all) ? all.length : 'unknown');
+        const found = all.find((e: any) => String(e.userId) === String(userId));
+        console.log('DEBUG /api/profile POST found by userId scan:', !!found, found && (found as any).employeeId);
+        if (found) {
+          employee = found;
+          console.log('DEBUG /api/profile POST assigned employee from scan by userId:', employee.employeeId);
+        }
+        // try by email if available on session
+        if (!employee && (req.user as any)?.email) {
+          const byEmail = all.find((e: any) => String(e.email).toLowerCase() === String((req.user as any).email).toLowerCase());
+          console.log('DEBUG /api/profile POST found by email scan:', !!byEmail, byEmail && (byEmail as any).employeeId);
+          if (byEmail) {
+            employee = byEmail;
+            console.log('DEBUG /api/profile POST assigned employee from scan by email:', employee.employeeId);
+          }
+        }
+      } catch (e) {
+        console.error('DEBUG /api/profile POST failed enumerate employees', e);
+      }
+    }
+
+    // Guard: sometimes session-stored employee exists but lacks an `employeeId` (different dev stores)
+    // In that case use the internal `id` as a fallback so updates don't fail with 404.
+    if (employee && !(employee as any).employeeId) {
+      console.log('DEBUG /api/profile POST session employee missing employeeId, falling back to id:', (employee as any).id);
+      (employee as any).employeeId = (employee as any).employeeId || (employee as any).id;
+    }
+
+    if (!employee) return res.status(404).json({ message: 'Employee not found for user' });
+
+    // Normalize incoming fields to match storage API and remove undefined values
+    const updatePayload: any = {
+      employeeId: employee.employeeId,
+      phone: data.phoneNumber !== undefined ? data.phoneNumber : undefined,
+      emergencyContact: data.emergencyContact !== undefined ? data.emergencyContact : undefined,
+      address: data.address !== undefined ? data.address : undefined,
+      dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+      gender: data.gender !== undefined ? data.gender : undefined,
+      bloodGroup: data.bloodGroup !== undefined ? data.bloodGroup : undefined,
+      maritalStatus: data.maritalStatus !== undefined ? data.maritalStatus : undefined,
+      department: data.department !== undefined ? data.department : undefined,
+      role: data.role !== undefined ? data.role : undefined,
+      uanNumber: data.uanNumber === null ? null : (data.uanNumber !== undefined ? data.uanNumber : undefined),
+      esicNumber: data.esicNumber === null ? null : (data.esicNumber !== undefined ? data.esicNumber : undefined),
       skills: data.skills || [],
-      education: data.education || [],
-      experience: data.experience || [],
+      profilePhotoUrl: req.file ? `/uploads/profiles/${req.file.filename}` : undefined,
+    };
+
+    Object.keys(updatePayload).forEach(k => {
+      if (updatePayload[k] === undefined) delete updatePayload[k];
     });
+
+    const profile = await dbStorage.updateEmployeeProfile(updatePayload);
 
     res.json({ message: 'Profile updated successfully', data: profile });
   } catch (error) {
@@ -62,16 +143,80 @@ router.post('/', upload.single('photo'), async (req: AuthRequest, res) => {
 
 router.get('/', async (req: AuthRequest, res) => {
   try {
-    const employeeId = req.user?.id;
-    
-    if (!employeeId) {
-      return res.status(401).json({ message: 'Unauthorized' });
+    console.log('DEBUG /api/profile GET headers:', req.headers.authorization);
+    console.log('DEBUG /api/profile GET user before auth:', req.user);
+    const userId = req.user?.id;
+    console.log('DEBUG /api/profile GET resolved userId:', userId);
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    // Fetch employee by userId directly (more reliable and efficient)
+    let employee = await dbStorage.getEmployeeByUserId(userId);
+    // Fallback: some sessions include an `employee` object; use it if DB lookup fails
+    if (!employee && (req.user as any)?.employee) {
+      employee = (req.user as any).employee;
+    }
+    if (!employee) {
+      try {
+        const all = await dbStorage.getEmployees();
+        console.log('DEBUG /api/profile GET userId:', userId);
+        console.log('DEBUG /api/profile GET employees userIds:', all.map((e: any) => e.userId).slice(0,50));
+        // try to find by loose match
+        const found = all.find((e: any) => String(e.userId) === String(userId));
+        console.log('DEBUG /api/profile GET foundByScan:', !!found, found && found.employeeId);
+        if (found) employee = found;
+        // If not found by userId, try matching by user's email (some employees linked only by email)
+        if (!employee && (req.user as any)?.email) {
+          const byEmail = all.find((e: any) => String(e.email).toLowerCase() === String((req.user as any).email).toLowerCase());
+          console.log('DEBUG /api/profile GET foundByEmail:', !!byEmail, byEmail && byEmail.employeeId);
+          if (byEmail) employee = byEmail;
+        }
+      } catch (e) {
+        console.error('DEBUG /api/profile GET failed enumerate employees', e);
+      }
+    }
+    // If no employee record exists for this user, return a default empty profile
+    if (!employee) {
+      const defaultProfile = {
+        gender: null,
+        phoneNumber: null,
+        emergencyContact: null,
+        address: null,
+        dateOfBirth: null,
+        bloodGroup: null,
+        maritalStatus: null,
+        skills: [],
+        photo: null,
+        panNumber: null,
+        aadhaarNumber: null,
+        uanNumber: null,
+        esicNumber: null,
+        bankAccount: null,
+        ifscCode: null,
+      };
+      return res.json(defaultProfile);
     }
 
-    const profile = await dbStorage.getEmployeeProfile(employeeId);
-    if (!profile) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
+    // Return only profile-related fields from the employee record
+    const profile = {
+      gender: (employee as any).gender || null,
+      phoneNumber: employee.phone || null,
+      emergencyContact: (employee as any).emergencyContact || null,
+      address: employee.address || null,
+      department: (employee as any).department || null,
+      role: (employee as any).role || null,
+      dateOfBirth: employee.dateOfBirth || null,
+      joinDate: employee.joinDate || null,
+      bloodGroup: (employee as any).bloodGroup || null,
+      maritalStatus: (employee as any).maritalStatus || null,
+      skills: Array.isArray((employee as any).skills) ? (employee as any).skills : ((employee as any).skills ? [ (employee as any).skills ] : []),
+    photo: (employee as any).profilePhotoUrl || null,
+  panNumber: (employee as any).panNumber || null,
+  aadhaarNumber: (employee as any).aadhaarNumber || null,
+  uanNumber: (employee as any).uanNumber || null,
+  esicNumber: (employee as any).esicNumber || null,
+      bankAccount: (employee as any).bankAccount || null,
+      ifscCode: (employee as any).ifscCode || null,
+    };
 
     res.json(profile);
   } catch (error) {

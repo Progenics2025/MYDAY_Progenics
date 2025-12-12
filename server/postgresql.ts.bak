@@ -1,0 +1,417 @@
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { 
+  type User, 
+  type NewUser, 
+  type Employee, 
+  type NewEmployee, 
+  type Attendance, 
+  type NewAttendance, 
+  type Payroll, 
+  type NewPayroll,
+  type Document,
+  type NewDocument,
+  type Expense,
+  type NewExpense
+} from "@shared/schema";
+import { 
+  users, 
+  employees, 
+  attendance, 
+  payroll, 
+  expenses, 
+  documents, 
+  leaveRequests,
+  gpsLocations 
+} from "@shared/schema";
+import { eq, and, like, or, gte, lte, lt } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
+
+export class PostgresStorage {
+  private pool: Pool;
+  private db: any;
+
+  constructor() {
+    this.pool = new Pool({
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      user: process.env.DB_USER || 'paypulse_user',
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME || 'paypulsepro'
+    });
+    this.db = drizzle(this.pool);
+  }
+
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.id, id));
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.username, username));
+    return result[0];
+  }
+
+  async createUser(data: Omit<NewUser, 'id'>): Promise<User> {
+    const user = {
+      id: randomUUID(),
+      ...data
+    };
+    const result = await this.db.insert(users).values(user).returning();
+    return result[0];
+  }
+
+  // Employee operations
+  async getEmployees(): Promise<Employee[]> {
+    const result = await this.db.select().from(employees);
+    return result;
+  }
+
+  async getEmployee(id: string): Promise<Employee | undefined> {
+    const result = await this.db.select().from(employees).where(eq(employees.id, id));
+    return result[0];
+  }
+
+  async getEmployeeByUserId(userId: string): Promise<Employee | undefined> {
+    const result = await this.db.select().from(employees).where(eq(employees.userId, userId));
+    return result[0];
+  }
+
+  async createEmployee(data: Omit<NewEmployee, 'id'>): Promise<Employee> {
+    const employee = {
+      id: randomUUID(),
+      ...data
+    };
+    const result = await this.db.insert(employees).values(employee).returning();
+    return result[0];
+  }
+
+  async updateEmployee(id: string, employeeData: Partial<Employee>): Promise<Employee | undefined> {
+    const result = await this.db
+      .update(employees)
+      .set(employeeData)
+      .where(eq(employees.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteEmployee(id: string): Promise<boolean> {
+    const result = await this.db.delete(employees).where(eq(employees.id, id));
+    return result.length > 0;
+  }
+
+  async searchEmployees(query: string, filters?: { department?: string; role?: string; status?: string }): Promise<Employee[]> {
+    let conditions = [];
+    
+    if (query) {
+      conditions.push(
+        or(
+          like(employees.firstName, `%${query}%`),
+          like(employees.lastName, `%${query}%`),
+          like(employees.email, `%${query}%`),
+          like(employees.employeeId, `%${query}%`)
+        )
+      );
+    }
+    
+    if (filters?.department) {
+      conditions.push(eq(employees.department, filters.department));
+    }
+    
+    if (filters?.role) {
+      conditions.push(eq(employees.role, filters.role));
+    }
+    
+    if (filters?.status) {
+      conditions.push(eq(employees.status, filters.status));
+    }
+    
+    if (conditions.length === 0) {
+      return this.getEmployees();
+    }
+    
+    return await this.db
+      .select()
+      .from(employees)
+      .where(and(...conditions));
+  }
+
+  // Attendance operations
+  async getTodayAttendance(employeeId: string): Promise<Attendance | undefined> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const result = await this.db
+      .select()
+      .from(attendance)
+      .where(and(
+        eq(attendance.employeeId, employeeId),
+        eq(attendance.date, today)
+      ));
+    
+    return result[0];
+  }
+
+  // Get attendance by date range
+  async getAttendanceByDateRange(params: { employeeId: string; startDate: Date; endDate: Date }) {
+    try {
+      const { employeeId, startDate, endDate } = params;
+      const result = await this.db
+        .select()
+        .from(attendance)
+        .where(and(
+          eq(attendance.employeeId, employeeId),
+          gte(attendance.date, startDate),
+          lt(attendance.date, endDate)
+        ));
+      return result;
+    } catch (error) {
+      console.error('Error fetching attendance by date range:', error);
+      throw error;
+    }
+  }
+
+  // Create attendance record with internal ID generation
+  async createAttendance(data: Omit<typeof attendance.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const attendanceData = {
+        id: randomUUID(),
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      const result = await this.db.insert(attendance).values(attendanceData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating attendance:', error);
+      throw error;
+    }
+  }
+
+  // Update attendance record
+  async updateAttendance(updates: { id: string } & Partial<typeof attendance.$inferInsert>) {
+    try {
+      const updateData = {
+        ...updates,
+        updatedAt: new Date()
+      };
+      const result = await this.db
+        .update(attendance)
+        .set(updateData)
+        .where(eq(attendance.id, updates.id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error updating attendance:', error);
+      throw error;
+    }
+  }
+
+  // GPS location tracking
+  async createGPSLocation(data: Omit<typeof gpsLocations.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const locationData = {
+        id: randomUUID(),
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      const result = await this.db.insert(gpsLocations).values(locationData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating GPS location:', error);
+      throw error;
+    }
+  }
+
+  async createGPSLocation(data: Omit<typeof gpsLocations.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const locationData = {
+        id: randomUUID(),
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const result = await this.db.insert(gpsLocations).values(locationData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating GPS location:', error);
+      throw error;
+    }
+  }
+
+  async createAttendance(data: Omit<typeof attendance.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>) {
+    const id = randomUUID();
+    const attendanceData = {
+      id: randomUUID(),
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    const result = await this.db.insert(attendance).values(attendanceData).returning();
+    return result[0];
+  }
+
+  async updateAttendance(updates: { id: string } & Partial<typeof attendance.$inferInsert>) {
+    const updateData = {
+      ...updates,
+      updatedAt: new Date()
+    };
+    const result = await this.db
+      .update(attendance)
+      .set(updateData)
+      .where(eq(attendance.id, updates.id))
+      .returning();
+    return result[0];
+  }
+
+  // Expense operations
+  async createExpense(data: Omit<NewExpense, 'id'>): Promise<Expense> {
+    try {
+      const expense = {
+        id: randomUUID(),
+        ...data
+      };
+
+      const result = await this.db.insert(expenses).values(expense).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating expense:', error);
+      throw error;
+    }
+  }
+
+  async getExpenses(employeeId: string): Promise<Expense[]> {
+    try {
+      const result = await this.db
+        .select()
+        .from(expenses)
+        .where(eq(expenses.employeeId, employeeId))
+        .orderBy(expenses.date);
+      return result;
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+      throw error;
+    }
+  }
+
+  async updateExpenseStatus(id: string, status: string, approvedBy: string): Promise<Expense | undefined> {
+    try {
+      const result = await this.db
+        .update(expenses)
+        .set({
+          status,
+          approvedBy,
+          approvedAt: new Date(),
+        })
+        .where(eq(expenses.id, id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error updating expense status:', error);
+      throw error;
+    }
+  }
+
+  // Document operations
+  async createDocument(data: Omit<NewDocument, 'id'>): Promise<Document> {
+    try {
+      const document = {
+        id: randomUUID(),
+        ...data
+      };
+
+      const result = await this.db.insert(documents).values(document).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating document:', error);
+      throw error;
+    }
+  }
+
+  async getDocuments(employeeId: string): Promise<Document[]> {
+    try {
+      const result = await this.db
+        .select()
+        .from(documents)
+        .where(eq(documents.employeeId, employeeId))
+        .orderBy(documents.createdAt);
+      return result;
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      throw error;
+    }
+  }
+
+  async updateDocumentStatus(id: string, isVerified: boolean, verifiedBy: string): Promise<Document | undefined> {
+    try {
+      const result = await this.db
+        .update(documents)
+        .set({
+          isVerified,
+          verifiedBy,
+          verifiedAt: new Date(),
+        })
+        .where(eq(documents.id, id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error updating document status:', error);
+      throw error;
+    }
+  }
+
+  // Leave Request operations
+  async getLeaveRequests(employeeId: string) {
+    try {
+      const result = await this.db
+        .select()
+        .from(leaveRequests)
+        .where(eq(leaveRequests.employeeId, employeeId))
+        .orderBy(leaveRequests.createdAt);
+      return result;
+    } catch (error) {
+      console.error('Error fetching leave requests:', error);
+      throw error;
+    }
+  }
+
+  async createLeaveRequest(data: Omit<typeof leaveRequests.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const leaveRequestData = {
+        id: randomUUID(),
+        ...data,
+        status: data.status || 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const result = await this.db.insert(leaveRequests).values(leaveRequestData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating leave request:', error);
+      throw error;
+    }
+  }
+
+  async updateLeaveRequestStatus(id: string, status: string, approvedBy: string) {
+    try {
+      const result = await this.db
+        .update(leaveRequests)
+        .set({
+          status,
+          approvedBy,
+          approvedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(leaveRequests.id, id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error updating leave request status:', error);
+      throw error;
+    }
+  }
+}

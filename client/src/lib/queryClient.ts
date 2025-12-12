@@ -3,7 +3,11 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    const err = new Error(`${res.status}: ${text}`);
+    // attach status and body for downstream handlers
+    (err as any).status = res.status;
+    (err as any).body = text;
+    throw err;
   }
 }
 
@@ -14,8 +18,8 @@ export async function apiRequest(
 ): Promise<Response> {
   const token = localStorage.getItem("auth_token");
   const headers: Record<string, string> = {};
-  
-  if (data) {
+  // If data is provided and it's not a FormData instance, send JSON
+  if (data && !(data instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
   
@@ -26,7 +30,7 @@ export async function apiRequest(
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body: data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 

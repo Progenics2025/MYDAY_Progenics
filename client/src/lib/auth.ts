@@ -30,12 +30,29 @@ export function useAuthState() {
     }
   }, []);
 
+  // allow components to re-fetch /api/auth/me to refresh global auth state
+  const refresh = async () => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return null;
+    try {
+      const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error('Failed to refresh auth');
+      const data = await res.json();
+      setUser(data.user);
+      setEmployee(data.employee);
+      return data;
+    } catch (e) {
+      console.error('Failed to refresh auth', e);
+      return null;
+    }
+  };
+
   const logout = () => {
     const token = localStorage.getItem("auth_token");
     localStorage.removeItem("auth_token");
     
     if (token) {
-      fetch("/api/auth/logout", {
+  fetch("/api/auth/logout", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       }).catch(() => {});
@@ -44,7 +61,7 @@ export function useAuthState() {
     window.location.reload();
   };
 
-  return { user, employee, isLoading, logout };
+  return { user, employee, isLoading, logout, refresh };
 }
 
 // Login function

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import MobileHeader from "@/components/layout/mobile-header";
@@ -7,24 +7,75 @@ import EmployeeTable from "@/components/employees/employee-table";
 import AttendancePage from "@/components/attendance/attendance-page";
 import PayrollOverview from "@/components/payroll/payroll-overview";
 import ExpenseForm from "@/components/expenses/expense-form";
+import ExpenseList from "@/components/expenses/expense-list";
+import LeaveRequestsList from "@/components/leave/leave-requests-list";
 import DocumentUpload from "@/components/documents/document-upload";
 import ProfileForm from "@/components/profile/profile-form";
 import ReportsDashboard from "@/components/reports/reports-dashboard";
+import HolidayCalendar from "@/components/holiday/holiday-calendar";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, CheckCircle, CalendarX, DollarSign, TrendingUp, BarChart3, Clock, MapPin, Receipt, Calendar, FileText, UserCircle } from "lucide-react";
+import { useAuthState } from "@/lib/auth";
 
-type ActiveSection = "dashboard" | "employees" | "attendance" | "payroll" | "expenses" | "documents" | "profile" | "reports";
+type ActiveSection = "dashboard" | "employees" | "attendance" | "payroll" | "expenses" | "documents" | "profile" | "reports" | "leave" | "holiday";
 
 export default function Dashboard() {
+  const { user } = useAuthState();
   const [activeSection, setActiveSection] = useState<ActiveSection>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Define allowed sections based on user role
+  const getAllowedSections = () => {
+    const allSections = {
+      dashboard: ["admin", "manager", "employee"],
+      employees: ["admin", "manager"],
+      attendance: ["admin", "manager", "employee"],
+      payroll: ["admin", "manager", "hr"],
+      expenses: ["admin", "manager", "employee"],
+      leave: ["admin", "manager", "employee"],
+      documents: ["admin", "manager", "employee"],
+      profile: ["manager", "employee"],
+      reports: ["admin", "manager"]
+      ,
+      holiday: ["admin", "manager", "employee"]
+    };
+
+    return Object.keys(allSections).filter(section =>
+    // Allow HR managers (role 'manager' with department 'HR') to access sections normally reserved for 'hr'
+    (allSections[section as keyof typeof allSections].includes(user?.role || "employee") ||
+      (user?.role === 'manager' && (user as any)?.employee?.department === 'HR' && allSections[section as keyof typeof allSections].includes('hr'))
+    )
+    ) as ActiveSection[];
+  };
+
+  const allowedSections = getAllowedSections();
+
+  // Redirect to dashboard if trying to access unauthorized section
+  useEffect(() => {
+    if (!allowedSections.includes(activeSection)) {
+      setActiveSection("dashboard");
+    }
+  }, [activeSection, allowedSections]);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
 
   const renderContent = () => {
+    // Check if user has access to the current section
+    if (!allowedSections.includes(activeSection)) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600">You don't have permission to access this section.</p>
+          </div>
+        </div>
+      );
+    }
+
     switch (activeSection) {
       case "employees":
         return <EmployeeTable />;
@@ -33,15 +84,35 @@ export default function Dashboard() {
       case "payroll":
         return <PayrollOverview />;
       case "expenses":
-        return <ExpenseForm />;
+        // show form and list side-by-side; ExpenseList will call the admin endpoint when appropriate
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <ExpenseForm />
+            </div>
+            <div>
+              <ExpenseList />
+            </div>
+          </div>
+        );
       case "documents":
         return <DocumentUpload />;
+      case "leave":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+            <div>
+              <LeaveRequestsList />
+            </div>
+          </div>
+        );
       case "profile":
         return <ProfileForm />;
       case "reports":
         return <ReportsDashboard />;
+      case "holiday":
+        return <HolidayCalendar role={(user?.role || 'employee') as any} />;
       default:
-        return <DashboardOverview stats={stats} setActiveSection={setActiveSection} />;
+        return <DashboardOverview stats={stats} setActiveSection={setActiveSection} user={user} />;
     }
   };
 
@@ -49,45 +120,44 @@ export default function Dashboard() {
     const titles = {
       dashboard: "Dashboard",
       employees: "Team Management",
-      attendance: "Attendance",
-      "gps-punch": "GPS Punch",
+      attendance: "Attendance", "gps-punch": "GPS Punch",
       payroll: "Payroll",
       expenses: "Expenses",
       leave: "Leave Requests",
       documents: "Documents",
       profile: "Profile",
-      reports: "Reports"
+      reports: "Reports",
+      holiday: "Company Holidays"
     };
     return titles[section] || "Dashboard";
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen supports-[height:100dvh]:h-[100dvh] bg-gray-50">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex">
-        <Sidebar 
+        <Sidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
       </div>
-      
+
       {/* Mobile Sidebar */}
-      <div className={`md:hidden fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <Sidebar 
+      <div className={`md:hidden fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+        <Sidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
       </div>
-      
+
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -96,189 +166,256 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Desktop Header */}
         <div className="hidden md:block">
-          <Header 
+          <Header
             title={getSectionTitle(activeSection)}
             onMenuToggle={() => setSidebarOpen(true)}
           />
         </div>
-        
+
         {/* Mobile Header */}
-        <MobileHeader 
+        <MobileHeader
           title={getSectionTitle(activeSection)}
           onMenuClick={() => setSidebarOpen(true)}
         />
-        
-        <main className="flex-1 overflow-auto p-4 md:p-6 pb-20 md:pb-6">
+
+        <main className="flex-1 overflow-auto p-4 md:p-6 pb-32 md:pb-6">
           {renderContent()}
         </main>
       </div>
-      
+
       {/* Mobile Bottom Navigation */}
-      <BottomNav 
+      <BottomNav
         activeSection={activeSection}
-        onSectionChange={setActiveSection}
+        onSectionChange={(section) => setActiveSection(section as ActiveSection)}
       />
     </div>
   );
 }
 
-function DashboardOverview({ stats, setActiveSection }: { stats: any; setActiveSection: (section: ActiveSection) => void }) {
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+import CalendarView from "@/components/holiday/calendar-view";
+
+function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setActiveSection: (section: ActiveSection) => void; user: any }) {
+  const employeeId = user?.employee?.employeeId;
+  const { data: balances = { casualLeave: 12, sickLeave: 12, earnedLeave: 15 } } = useQuery({
+    queryKey: ['/api/leave-balances', employeeId],
+    queryFn: async () => {
+      if (!employeeId) return { casualLeave: 12, sickLeave: 12, earnedLeave: 15 };
+      try {
+        const res = await apiRequest('GET', `/api/leave-balances/${employeeId}`);
+        return await res.json();
+      } catch (e) {
+        return { casualLeave: 12, sickLeave: 12, earnedLeave: 15 };
+      }
+    },
+    enabled: !!employeeId,
+  });
+
+  // Calculate used leaves (Total - Remaining)
+  const totalCasual = 12;
+  const totalSick = 12;
+  const totalEarned = 15;
+
+  const usedCasual = totalCasual - (Number(balances?.casualLeave) || 0);
+  const usedSick = totalSick - (Number(balances?.sickLeave) || 0);
+  const usedEarned = totalEarned - (Number(balances?.earnedLeave) || 0);
+
+  const isAdminOrHR = user?.role === 'admin' || user?.role === 'hr';
+  const isAdminOrManager = user?.role === 'admin' || user?.role === 'manager';
+
+  // Mock data for Recent Activity
+  const recentActivity = [
+    { id: 1, title: "Leave Approved", desc: "Your casual leave for Nov 28 was approved", time: "2 hours ago", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+    { id: 2, title: "New Policy", desc: "Updated expense policy available", time: "Yesterday", icon: FileText, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    { id: 3, title: "Holiday Reminder", desc: "Diwali holiday on Nov 12", time: "2 days ago", icon: Calendar, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
+  ];
+
   return (
-    <div className="space-y-8">
-      {/* Stats Cards */}
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+      {/* Stats Row - Role Based Visibility */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        {/* Total Employees (Admin/HR) */}
+        {isAdminOrHR && (
+          <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
+            <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Employees</p>
-                <p className="text-2xl font-bold text-foreground" data-testid="text-total-employees">
-                  {stats?.totalEmployees || 0}
-                </p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Employees</p>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.totalEmployees || 124}</h3>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="text-blue-600 text-xl" />
+              <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
-              <span className="text-green-600">12%</span>
-              <span className="text-muted-foreground ml-2">vs last month</span>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        {/* Present Today (Admin/Manager) */}
+        {isAdminOrManager && (
+          <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
+            <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Present Today</p>
-                <p className="text-2xl font-bold text-foreground" data-testid="text-present-today">
-                  {stats?.presentToday || 0}
-                </p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Present Today</p>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.presentToday || 0}</h3>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="text-green-600 text-xl" />
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                <UserCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-green-600">{stats?.attendanceRate || 0}%</span>
-              <span className="text-muted-foreground ml-2">attendance rate</span>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        {/* On Leave (Admin/Manager) */}
+        {isAdminOrManager && (
+          <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
+            <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">On Leave</p>
-                <p className="text-2xl font-bold text-foreground" data-testid="text-on-leave">
-                  {stats?.onLeave || 0}
-                </p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">On Leave</p>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.onLeave || 0}</h3>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <CalendarX className="text-yellow-600 text-xl" />
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                <CalendarX className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-muted-foreground">3 sick, 5 vacation</span>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        {/* Payroll Due (Admin/HR) */}
+        {isAdminOrHR && (
+          <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
+            <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Payroll Due</p>
-                <p className="text-2xl font-bold text-foreground" data-testid="text-payroll-due">
-                  ₹{stats?.payrollDue?.toLocaleString() || 0}
-                </p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Payroll Due</p>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">₹{stats?.payrollDue?.toLocaleString() || '12.5L'}</h3>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-purple-600 text-xl" />
+              <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl">
+                <DollarSign className="w-6 h-6 text-rose-600 dark:text-rose-400" />
               </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-muted-foreground">Due in 3 days</span>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Recent Activity & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity */}
-        <Card className="lg:col-span-2">
-          <div className="p-6 border-b border-border">
-            <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
-          </div>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="text-blue-600 text-sm" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">System initialized successfully</p>
-                  <p className="text-xs text-muted-foreground">HR Management System • Just now</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="text-green-600 text-sm" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">Admin user logged in</p>
-                  <p className="text-xs text-muted-foreground">Authentication module • 1 minute ago</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        {/* Quick Actions */}
-        <Card>
-          <div className="p-6 border-b border-border">
-            <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
-          </div>
-          <CardContent className="p-6 space-y-3">
-            <button 
-              className="w-full flex items-center space-x-3 p-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors"
-              onClick={() => setActiveSection("employees")}
-              data-testid="button-add-employee"
-            >
-              <Users className="w-4 h-4" />
-              <span>Manage Employees</span>
-            </button>
-            <button 
-              className="w-full flex items-center space-x-3 p-3 bg-accent hover:bg-accent/80 text-accent-foreground rounded-md transition-colors"
-              onClick={() => setActiveSection("payroll")}
-              data-testid="button-generate-payroll"
-            >
-              <DollarSign className="w-4 h-4" />
-              <span>Generate Payroll</span>
-            </button>
-            <button 
-              className="w-full flex items-center space-x-3 p-3 bg-accent hover:bg-accent/80 text-accent-foreground rounded-md transition-colors"
-              onClick={() => setActiveSection("reports")}
-              data-testid="button-view-reports"
-            >
-              <TrendingUp className="w-4 h-4" />
-              <span>View Reports</span>
-            </button>
-            <button 
-              className="w-full flex items-center space-x-3 p-3 bg-accent hover:bg-accent/80 text-accent-foreground rounded-md transition-colors"
-              onClick={() => setActiveSection("attendance")}
-              data-testid="button-manage-attendance"
-            >
-              <CheckCircle className="w-4 h-4" />
-              <span>Attendance</span>
-            </button>
-          </CardContent>
-        </Card>
+        {/* Left Column: Leave Balances & Calendar */}
+        <div className="lg:col-span-2 space-y-8">
+
+          {/* My Leave Balances */}
+          <Card className="border-none shadow-xl bg-white dark:bg-slate-800">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">My Leave Balances</h3>
+              <span className="text-sm font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
+                Total Remaining: {(Number(balances?.casualLeave) || 0) + (Number(balances?.sickLeave) || 0) + (Number(balances?.earnedLeave) || 0)} Days
+              </span>
+            </div>
+            <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Casual Leave</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.casualLeave) || 0}/{totalCasual}</p>
+                <p className="text-xs text-slate-400 mt-1">Available</p>
+              </div>
+              <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">Sick Leave</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.sickLeave) || 0}/{totalSick}</p>
+                <p className="text-xs text-slate-400 mt-1">Available</p>
+              </div>
+              <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-800">
+                <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">Earned Leave</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.earnedLeave) || 0}/{totalEarned}</p>
+                <p className="text-xs text-slate-400 mt-1">Available</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calendar View (Replaces Upcoming Holidays) */}
+          <CalendarView />
+
+        </div>
+
+        {/* Right Column: Quick Actions & Recent Activity */}
+        <div className="space-y-8">
+
+          {/* Quick Actions */}
+          <Card className="border-none shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden">
+            <div className="p-6 border-b border-white/10">
+              <h3 className="text-lg font-semibold flex items-center text-white">
+                <TrendingUp className="w-5 h-5 mr-2 text-emerald-400" />
+                Quick Actions
+              </h3>
+            </div>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Admin Only Actions */}
+                {user?.role === 'admin' && (
+                  <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('employees')}>
+                    <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <Users className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <span className="text-xs font-bold text-white group-hover:text-indigo-200">Add Staff</span>
+                  </button>
+                )}
+
+                {/* Common Actions */}
+                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('attendance')}>
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <Clock className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <span className="text-xs font-bold text-white group-hover:text-blue-200">Attendance</span>
+                </button>
+
+                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('leave')}>
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <Calendar className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <span className="text-xs font-bold text-white group-hover:text-emerald-200">Apply Leave</span>
+                </button>
+
+                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('expenses')}>
+                  <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <Receipt className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <span className="text-xs font-bold text-white group-hover:text-amber-200">Expense</span>
+                </button>
+
+                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('profile')}>
+                  <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <UserCircle className="w-5 h-5 text-violet-400" />
+                  </div>
+                  <span className="text-xs font-bold text-white group-hover:text-violet-200">Profile</span>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card className="border-none shadow-xl bg-white dark:bg-slate-800">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">Recent Activity</h3>
+            </div>
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                {recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex space-x-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activity.bg}`}>
+                      <activity.icon className={`w-5 h-5 ${activity.color}`} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{activity.title}</h4>
+                      <p className="text-xs text-slate-500 mt-1">{activity.desc}</p>
+                      <span className="text-[10px] font-medium text-slate-400 mt-2 block">{activity.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
       </div>
     </div>
   );
 }
+
+// LeaveBalanceCard removed: dashboard now renders profile-style leave cards directly

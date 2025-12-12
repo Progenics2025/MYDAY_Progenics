@@ -23,8 +23,17 @@ export default function AttendanceTracker() {
   });
 
   const { data: attendanceHistory = [] } = useQuery<Attendance[]>({
-    queryKey: ["/api/attendance", employee?.employeeId],
-    queryFn: () => apiRequest("GET", `/api/attendance?employeeId=${employee?.employeeId}`),
+    queryKey: ["/api/attendance", employee?.employeeId, monthFilter],
+    queryFn: async () => {
+      const response = await apiRequest(
+        "GET", 
+        `/api/attendance?employeeId=${employee?.employeeId}&month=${monthFilter}`
+      );
+      if (!response.ok) {
+        throw new Error('Failed to fetch attendance history');
+      }
+      return response.json();
+    },
     enabled: !!employee?.employeeId,
   });
 
@@ -87,16 +96,52 @@ export default function AttendanceTracker() {
   };
 
   const calculateHoursWorked = () => {
-    if (!todayAttendance || !todayAttendance.punchIn) return "0h 0m";
-    
-    const punchIn = new Date(todayAttendance.punchIn);
-    const punchOut = todayAttendance.punchOut ? new Date(todayAttendance.punchOut) : new Date();
-    const diff = punchOut.getTime() - punchIn.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+    // Sum totalHours of today's attendance history (attendanceHistory may contain multiple entries per day)
+    if (!Array.isArray(attendanceHistory) || attendanceHistory.length === 0) return "0h 0m";
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    let totalMs = 0;
+    attendanceHistory.forEach((rec: Attendance) => {
+      const recDate = new Date(rec.date);
+      recDate.setHours(0,0,0,0);
+      if (recDate.getTime() === today.getTime()) {
+        if (rec.punchIn && rec.punchOut) {
+          const inT = new Date(rec.punchIn).getTime();
+          const outT = new Date(rec.punchOut).getTime();
+          totalMs += Math.max(0, outT - inT);
+        } else if (rec.punchIn && !rec.punchOut) {
+          totalMs += Math.max(0, Date.now() - new Date(rec.punchIn).getTime());
+        }
+      }
+    });
+
+    const hours = Math.floor(totalMs / (1000 * 60 * 60));
+    const minutes = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
+
+  // Build today's attendance records from attendanceHistory
+  const todaysRecords = Array.isArray(attendanceHistory)
+    ? attendanceHistory
+        .filter((rec: Attendance) => {
+          const recDate = new Date(rec.date);
+          const today = new Date();
+          recDate.setHours(0,0,0,0);
+          today.setHours(0,0,0,0);
+          return recDate.getTime() === today.getTime();
+        })
+        .sort((a: Attendance, b: Attendance) => {
+          // sort by createdAt or punchIn (safely handle nulls)
+          const aTime = (a.punchIn ? new Date(a.punchIn).getTime() : (a.createdAt ? new Date((a as any).createdAt).getTime() : Date.now()));
+          const bTime = (b.punchIn ? new Date(b.punchIn).getTime() : (b.createdAt ? new Date((b as any).createdAt).getTime() : Date.now()));
+          return aTime - bTime;
+        })
+    : [];
+
+  const earliestPunchIn = todaysRecords.length ? todaysRecords[0].punchIn : (todayAttendance?.punchIn || null);
+  const latestPunchOut = todaysRecords.length ? (todaysRecords.slice().reverse().find(r => r.punchOut)?.punchOut || null) : (todayAttendance?.punchOut || null);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -111,8 +156,9 @@ export default function AttendanceTracker() {
     }
   };
 
-  const canPunchIn = !todayAttendance || !todayAttendance.punchIn;
-  const canPunchOut = todayAttendance && todayAttendance.punchIn && !todayAttendance.punchOut;
+  // Determine punch availability based on latest todayAttendance (latest record for today)
+  const canPunchIn = !todayAttendance || !!todayAttendance.punchOut; // allow punch-in if no record or last one is closed
+  const canPunchOut = !!todayAttendance && !!todayAttendance.punchIn && !todayAttendance.punchOut;
 
   return (
     <div className="space-y-6">
@@ -141,18 +187,34 @@ export default function AttendanceTracker() {
       </div>
 
       {/* Today's Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Check-in Time</p>
                 <p className="text-xl font-bold text-foreground" data-testid="text-checkin-time">
-                  {todayAttendance && todayAttendance.punchIn ? formatTime(todayAttendance.punchIn) : '--:--'}
+                  {earliestPunchIn ? formatTime(earliestPunchIn) : '--:--'}
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Clock className="text-green-600 text-xl" />
+                <LogIn className="text-green-600 text-xl" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Check-out Time</p>
+                <p className="text-xl font-bold text-foreground" data-testid="text-checkout-time">
+                  {latestPunchOut ? formatTime(latestPunchOut) : '--:--'}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <LogOut className="text-red-600 text-xl" />
               </div>
             </div>
           </CardContent>
@@ -273,6 +335,28 @@ export default function AttendanceTracker() {
           </table>
         </div>
       </Card>
+
+      {/* Today's Punches (detailed list) */}
+      {todaysRecords.length > 0 && (
+        <Card>
+          <div className="p-6">
+            <h4 className="text-md font-semibold mb-3">Today's Punches</h4>
+            <div className="space-y-2">
+              {todaysRecords.map((r: Attendance) => (
+                <div key={r.id} className="flex justify-between items-center p-2 bg-muted rounded">
+                  <div>
+                    <div className="text-sm font-medium">Punch In: {r.punchIn ? formatTime(r.punchIn) : '--:--'}</div>
+                    <div className="text-xs text-muted-foreground">Punch Out: {r.punchOut ? formatTime(r.punchOut) : '--:--'}</div>
+                  </div>
+                  <div className="text-sm">
+                    {r.totalHours ? `${parseFloat(r.totalHours).toFixed(2)}h` : (r.punchIn && !r.punchOut ? 'Open' : '--')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

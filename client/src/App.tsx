@@ -2,9 +2,10 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuthState } from "./lib/auth";
 import Login from "@/pages/login";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/dashboard";
 import { useEffect } from "react";
 
@@ -20,6 +21,10 @@ function Router() {
   }
 
   if (!user) {
+    // Allow unauthenticated access to forgot/reset pages
+    const path = window.location.pathname;
+    if (path === '/forgotPassword') return <ForgotPassword />;
+    if (path === '/resetPassword') return <ResetPassword />;
     return <Login />;
   }
 
@@ -38,26 +43,20 @@ function Router() {
 
 function App() {
   useEffect(() => {
-    // Register service worker for PWA
+    // Unregister service workers to resolve loading errors
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('SW registered: ', registration);
-          })
-          .catch((registrationError) => {
-            console.log('SW registration failed: ', registrationError);
-          });
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
       });
     }
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <Toaster />
+      <Router />
     </QueryClientProvider>
   );
 }

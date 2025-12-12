@@ -8,9 +8,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Search, Plus, Edit, Eye, Trash2 } from "lucide-react";
+import { Search, Plus, Edit, Eye, Trash2, Calendar } from "lucide-react";
 import EmployeeForm from "./employee-form";
+import { useAuthState } from "@/lib/auth";
 import { Employee } from "@shared/schema";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function EmployeeTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,39 +39,72 @@ export default function EmployeeTable() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["/api/employees", searchQuery, departmentFilter, roleFilter, statusFilter],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (departmentFilter && departmentFilter !== 'all') params.append('department', departmentFilter);
       if (roleFilter && roleFilter !== 'all') params.append('role', roleFilter);
       if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
-      
+
       const queryString = params.toString();
-      return apiRequest('GET', `/api/employees${queryString ? '?' + queryString : ''}`);
+      try {
+        const token = localStorage.getItem("auth_token");
+        console.log('Auth token:', token);
+        console.log('Making API request to:', `/api/employees${queryString ? '?' + queryString : ''}`);
+        const response = await apiRequest('GET', `/api/employees${queryString ? '?' + queryString : ''}`);
+        const jsonData = await response.json();
+        console.log('API Response:', jsonData);
+        if (!Array.isArray(jsonData)) {
+          console.error('Invalid response format. Expected array, got:', typeof jsonData);
+          return [];
+        }
+        return jsonData;
+      } catch (err) {
+        console.error('API Error:', err);
+        throw err;
+      }
     },
   });
 
   const employees = Array.isArray(data) ? data : [];
 
+  const { user } = useAuthState();
+
+  const [editingLeaveFor, setEditingLeaveFor] = useState<any>(null);
+  const [leaveForm, setLeaveForm] = useState({ casualLeave: '', sickLeave: '', earnedLeave: '' });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await apiRequest("DELETE", `/api/employees/${id}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-      toast({
-        title: "Success",
-        description: "Employee deleted successfully",
-      });
+    // Optimistic update: remove the employee from the cached list immediately
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/employees"] });
+      const previous = queryClient.getQueryData<Employee[]>(["/api/employees"]);
+      queryClient.setQueryData<Employee[]>(["/api/employees"], (old = []) => old.filter(e => e.id !== id));
+      return { previous };
     },
-    onError: () => {
+    onError: (_err, _id, context: any) => {
+      // rollback
+      if (context?.previous) {
+        queryClient.setQueryData(["/api/employees"], context.previous);
+      }
       toast({
         title: "Error",
         description: "Failed to delete employee",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Employee deleted successfully",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
     },
   });
 
@@ -82,11 +131,47 @@ export default function EmployeeTable() {
     );
   }
 
+
+  const openLeaveEditor = (employee: any) => {
+    setEditingLeaveFor(employee);
+    setLeaveForm({
+      casualLeave: String((employee as any).casualLeave ?? (employee as any).accountCasual ?? 12),
+      sickLeave: String((employee as any).sickLeave ?? (employee as any).accountSick ?? 12),
+      earnedLeave: String((employee as any).earnedLeave ?? (employee as any).accountEarned ?? 15),
+    });
+  };
+
+  const submitLeaveUpdate = async () => {
+    if (!editingLeaveFor) return;
+    try {
+      const token = localStorage.getItem('auth_token');
+      const resp = await fetch(`/api/leave-balances/${editingLeaveFor.employeeId || editingLeaveFor.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ casualLeave: Number(leaveForm.casualLeave || 0), sickLeave: Number(leaveForm.sickLeave || 0), earnedLeave: Number(leaveForm.earnedLeave || 0) })
+      });
+      if (!resp.ok) {
+        let errMsg = 'Failed to update leave balances';
+        try {
+          const body = await resp.json();
+          if (body && body.message) errMsg = body.message;
+        } catch (_) { }
+        throw new Error(errMsg);
+      }
+      toast({ title: 'Updated', description: 'Leave balances updated' });
+      setEditingLeaveFor(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
+    } catch (e) {
+      console.error(e);
+      toast({ title: 'Error', description: (e as any).message || 'Failed to update leave balances', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between">
         <h2 className="text-2xl font-bold text-foreground mb-4 sm:mb-0">Employee Management</h2>
-        <Button 
+        <Button
           onClick={() => setShowAddForm(true)}
           className="flex items-center space-x-2"
           data-testid="button-add-employee"
@@ -159,112 +244,160 @@ export default function EmployeeTable() {
         </CardContent>
       </Card>
 
+
+
+
+
       {/* Employee Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Employee
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Department
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Salary
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-card divide-y divide-border">
+      <Card className="overflow-hidden shadow-md border-none">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-[300px]">Employee</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Account Role</TableHead>
+                <TableHead>Salary</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
                     Loading employees...
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : employees.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No employees found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 employees.map((employee: Employee) => (
-                  <tr key={employee.id} className="hover:bg-accent transition-colors" data-testid={`row-employee-${employee.id}`}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <TableRow key={employee.id} className="group hover:bg-muted/50 transition-colors" data-testid={`row-employee-${employee.id}`}>
+                    <TableCell className="font-medium">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-blue-600 font-medium">
-                            {`${employee.firstName[0]}${employee.lastName[0]}`}
-                          </span>
+                        <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 font-medium text-sm mr-3">
+                          {`${employee.firstName[0]}${employee.lastName[0]}`}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-foreground">{`${employee.firstName} ${employee.lastName}`}</div>
-                          <div className="text-sm text-muted-foreground">{employee.email}</div>
+                        <div>
+                          <div className="font-medium text-foreground">{`${employee.firstName} ${employee.lastName}`}</div>
+                          <div className="text-xs text-muted-foreground">{employee.email}</div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      {employee.department}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      {employee.role}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      ₹{parseFloat(employee.salary || '0').toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'}>
+                    </TableCell>
+                    <TableCell>{employee.department}</TableCell>
+                    <TableCell>{employee.role}</TableCell>
+                    <TableCell className="capitalize">{((employee as any).accountRole || 'employee')}</TableCell>
+                    <TableCell>₹{parseFloat(employee.salary || '0').toLocaleString()}</TableCell>
+                    <TableCell>
+                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className={employee.status === 'active' ? 'bg-emerald-500 hover:bg-emerald-600' : ''}>
                         {employee.status}
                       </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                      <div className="flex space-x-2">
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => setEditingEmployee(employee)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                           data-testid={`button-edit-${employee.id}`}
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
+                        {(
+                          user?.role === 'admin' ||
+                          user?.role === 'hr' ||
+                          (user?.role === 'manager' && (user as any)?.employee?.department === 'HR')
+                        ) && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openLeaveEditor(employee)}
+                              className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                              data-testid={`button-edit-leave-${employee.id}`}
+                            >
+                              <Calendar className="w-4 h-4" />
+                            </Button>
+                          )}
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="text-green-600 hover:text-green-900"
+                          size="icon"
+                          className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                           data-testid={`button-view-${employee.id}`}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
                           onClick={() => handleDelete(employee.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                           data-testid={`button-delete-${employee.id}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Card>
+
+      <Dialog open={!!editingLeaveFor} onOpenChange={(open) => !open && setEditingLeaveFor(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Leave Balances for {editingLeaveFor?.firstName} {editingLeaveFor?.lastName}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="casual" className="text-right">
+                Casual
+              </Label>
+              <Input
+                id="casual"
+                value={leaveForm.casualLeave}
+                onChange={(e) => setLeaveForm(s => ({ ...s, casualLeave: e.target.value }))}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="sick" className="text-right">
+                Sick
+              </Label>
+              <Input
+                id="sick"
+                value={leaveForm.sickLeave}
+                onChange={(e) => setLeaveForm(s => ({ ...s, sickLeave: e.target.value }))}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="earned" className="text-right">
+                Earned
+              </Label>
+              <Input
+                id="earned"
+                value={leaveForm.earnedLeave}
+                onChange={(e) => setLeaveForm(s => ({ ...s, earnedLeave: e.target.value }))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingLeaveFor(null)}>Cancel</Button>
+            <Button onClick={submitLeaveUpdate}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

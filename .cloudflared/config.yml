@@ -1,0 +1,21 @@
+# # Cloudflare Tunnel configuration for myDay
+# # Replace `hostname` with the public hostname you've configured in Cloudflare (CNAME to tunnel).
+# # The `tunnel` field uses the tunnel UUID you provided.
+# tunnel: d2d7fc50-b5e5-40a5-addb-d1301a6449ed
+
+# # If you have a credentials file, set credentials-file: /path/to/credentials.json
+# credentials-file: ./credentials.json
+
+# ingress:
+#   - hostname: myday.example.com # replace with your hostname (configure in Cloudflare Dashboard)
+#     service: http://localhost:5000
+#   - service: http_status:404
+
+# # You can add additional services or routes as needed.
+tunnel: d2d7fc50-b5e5-40a5-addb-d1301a6449ed
+credentials-file: /home/progenics-bioinfo/.cloudflared/d2d7fc50-b5e5-40a5-addb-d1301a6449ed.json
+
+ingress:
+  - hostname: myday.progenicslabs.com
+    service: http://localhost:5000
+  - service: http_status:404

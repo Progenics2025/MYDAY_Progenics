@@ -3,14 +3,20 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { generatePayslipPDF } from "@/lib/pdf";
-import { DollarSign, Users, TrendingUp, Calculator, Eye, Download } from "lucide-react";
+import { generatePayslipPDF, getPayslipPDFUrl } from "@/lib/pdf";
+import { Users, TrendingUp, Calculator, Eye, Download, Pencil } from "lucide-react";
 import { Payroll, Employee } from "@shared/schema";
+import { EditPayslipDialog } from "./edit-payslip-dialog";
 
 export default function PayrollOverview() {
   const [departmentFilter, setDepartmentFilter] = useState("");
+  const [editingPayroll, setEditingPayroll] = useState<Payroll | null>(null);
+  const [viewingPayroll, setViewingPayroll] = useState<Payroll | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -26,7 +32,7 @@ export default function PayrollOverview() {
     mutationFn: async () => {
       const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
       const employeeIds = (employees as Employee[]).map((emp: Employee) => emp.id);
-      
+
       const response = await apiRequest("POST", "/api/payroll/generate", {
         period: currentMonth,
         employeeIds,
@@ -62,11 +68,28 @@ export default function PayrollOverview() {
     }
   };
 
-  const filteredPayroll = departmentFilter 
+  const handleViewPayslip = async (payroll: Payroll) => {
+    const employee = (employees as Employee[]).find((emp: Employee) => emp.id === payroll.employeeId);
+    if (employee) {
+      const url = await getPayslipPDFUrl(payroll, employee);
+      if (url) {
+        setPdfUrl(url);
+        setViewingPayroll(payroll);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate PDF for viewing",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const filteredPayroll = departmentFilter
     ? payrollRecords.filter((payroll: Payroll) => {
-        const employee = (employees as Employee[]).find((emp: Employee) => emp.id === payroll.employeeId);
-        return employee?.department === departmentFilter;
-      })
+      const employee = (employees as Employee[]).find((emp: Employee) => emp.id === payroll.employeeId);
+      return employee?.department === departmentFilter;
+    })
     : payrollRecords;
 
   // Calculate stats
@@ -101,7 +124,7 @@ export default function PayrollOverview() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-green-600 text-xl" />
+                <span className="text-green-600 text-xl">₹</span>
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
@@ -207,7 +230,7 @@ export default function PayrollOverview() {
               ) : (
                 filteredPayroll.map((payroll: Payroll) => {
                   const employee = (employees as Employee[]).find((emp: Employee) => emp.id === payroll.employeeId);
-                  
+
                   return (
                     <tr key={payroll.id} data-testid={`row-payroll-${payroll.id}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -241,6 +264,16 @@ export default function PayrollOverview() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => setEditingPayroll(payroll)}
+                            className="text-orange-600 hover:text-orange-900"
+                            data-testid={`button-edit-payslip-${payroll.id}`}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewPayslip(payroll)}
                             className="text-blue-600 hover:text-blue-900"
                             data-testid={`button-view-payslip-${payroll.id}`}
                           >
@@ -265,6 +298,41 @@ export default function PayrollOverview() {
           </table>
         </div>
       </Card>
+
+      {/* Edit Dialog */}
+      {editingPayroll && (
+        <EditPayslipDialog
+          isOpen={!!editingPayroll}
+          onClose={() => setEditingPayroll(null)}
+          payroll={editingPayroll}
+          employee={(employees as Employee[]).find(e => e.id === editingPayroll.employeeId)!}
+          onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/payroll"] });
+          }}
+        />
+      )}
+
+      {/* PDF Viewer Dialog */}
+      <Dialog open={!!viewingPayroll} onOpenChange={(open) => {
+        if (!open) {
+          setViewingPayroll(null);
+          setPdfUrl(null);
+        }
+      }}>
+        <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>Payslip Viewer</DialogTitle>
+            <DialogDescription className="hidden">Payslip Preview</DialogDescription>
+          </DialogHeader>
+          {pdfUrl && (
+            <iframe
+              src={pdfUrl}
+              className="w-full flex-1 border-none"
+              title="Payslip PDF"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
