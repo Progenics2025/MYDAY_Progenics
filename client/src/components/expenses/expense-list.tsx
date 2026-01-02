@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthState } from '@/lib/auth';
+import { Button } from '../ui/button';
 
 export default function ExpenseList() {
   const { user } = useAuthState();
+  const queryClient = useQueryClient();
   const endpointBase = (user && (user.role === 'admin' || user.role === 'manager')) ? '/api/expenses/all' : '/api/expenses';
 
   const [page, setPage] = useState(1);
@@ -11,6 +13,7 @@ export default function ExpenseList() {
   const [statusFilter, setStatusFilter] = useState('');
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState(q);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
   const debounceRef = useRef<number | null>(null);
 
   // use debouncedQ in the query key so we don't refetch on every keystroke
@@ -47,6 +50,64 @@ export default function ExpenseList() {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
   }, [q]);
+
+  const handleApprove = async (expenseId: string) => {
+    setApprovingId(expenseId);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('Authentication required');
+
+      const response = await fetch(`/api/expenses/${expenseId}/approve`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to approve expense');
+      }
+
+      // Refresh the data
+      queryClient.invalidateQueries({ queryKey: [endpointBase, page, pageSize, statusFilter, debouncedQ] as any });
+    } catch (error: any) {
+      alert(`Error approving expense: ${error.message}`);
+      console.error('Error approving expense:', error);
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleReject = async (expenseId: string) => {
+    setApprovingId(expenseId);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('Authentication required');
+
+      const response = await fetch(`/api/expenses/${expenseId}/reject`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reject expense');
+      }
+
+      // Refresh the data
+      queryClient.invalidateQueries({ queryKey: [endpointBase, page, pageSize, statusFilter, debouncedQ] as any });
+    } catch (error: any) {
+      alert(`Error rejecting expense: ${error.message}`);
+      console.error('Error rejecting expense:', error);
+    } finally {
+      setApprovingId(null);
+    }
+  };
 
   if (isLoading) return <div>Loading expenses...</div>;
   if (error) return <div>Error loading expenses</div>;
@@ -100,7 +161,31 @@ export default function ExpenseList() {
                   <td className="px-4 py-3 text-sm text-foreground">{exp.category}</td>
                   <td className="px-4 py-3 text-sm text-foreground text-right">₹{Number(exp.amount).toFixed(2)}</td>
                   <td className="px-4 py-3 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${exp.status === 'approved' ? 'bg-green-100 text-green-800' : exp.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{exp.status || 'pending'}</span>
+                    {exp.status === 'pending' ? (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => handleApprove(exp.id)}
+                          disabled={approvingId === exp.id}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {approvingId === exp.id ? 'Processing...' : 'Approve'}
+                        </Button>
+                        <Button
+                          onClick={() => handleReject(exp.id)}
+                          disabled={approvingId === exp.id}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-600 text-red-600 hover:bg-red-50"
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${exp.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {exp.status === 'approved' ? 'Approved' : 'Rejected'}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     {exp.receiptUrl || exp.receipt_url ? (

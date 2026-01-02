@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, CheckCircle, XCircle, AlertCircle, Calendar, FileText, Bell } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Search, Filter, CheckCircle, XCircle, AlertCircle, Calendar, FileText, Bell, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,6 +24,9 @@ export default function LeaveRequestsList() {
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState(q);
   const [approvingMap, setApprovingMap] = useState<Record<string, boolean>>({});
+  const [rejectingMap, setRejectingMap] = useState<Record<string, boolean>>({});
+  const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
@@ -63,11 +67,14 @@ export default function LeaveRequestsList() {
   const total = (data && (data.total || 0)) || 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const handleAction = async (action: 'approve' | 'notify', request: any) => {
+  const handleAction = async (action: 'approve' | 'notify' | 'reject', request: any) => {
     try {
       if (action === 'approve') setApprovingMap((s) => ({ ...s, [request.id]: true }));
+      if (action === 'reject') setRejectingMap((s) => ({ ...s, [request.id]: true }));
 
       const token = localStorage.getItem('auth_token');
+      console.log(`[LEAVE] Action: ${action}, Request ID: ${request.id}`);
+      
       const empRes = await fetch('/api/employees', { headers: { Authorization: `Bearer ${token}` } });
       if (!empRes.ok) throw new Error('Failed to load employees');
       const empList = await empRes.json();
@@ -87,30 +94,49 @@ export default function LeaveRequestsList() {
         });
         if (!notifyResp.ok) throw new Error('Notify failed');
         toast({ title: "Success", description: "Manager notified successfully" });
-      } else {
-        // Create notification first
-        const createRes = await fetch('/api/notify/leave-requests', {
+      } else if (action === 'reject') {
+        console.log(`[LEAVE] Starting reject flow for request: ${request.id}, reason: ${rejectReason}`);
+        
+        // Reject directly using the leave request ID (no need to create notification)
+        const rejectRes = await fetch(`/api/notify/reject-leave/${request.id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ leaveRequestId: request.id, managerId })
+          body: JSON.stringify({ reason: rejectReason })
         });
-        if (!createRes.ok) throw new Error('Failed to create notification');
-        const createData = await createRes.json();
-
-        // Then approve
-        const approveRes = await fetch(`/api/notify/leave-requests/${createData.notificationId}/approve`, {
+        if (!rejectRes.ok) {
+          const errData = await rejectRes.json().catch(() => ({}));
+          console.error(`[LEAVE] Reject failed:`, errData);
+          throw new Error(errData.message || 'Failed to reject leave request');
+        }
+        const rejectData = await rejectRes.json();
+        console.log(`[LEAVE] Leave request rejected successfully:`, rejectData);
+        toast({ title: "Success", description: "Leave request rejected successfully" });
+        setShowRejectModal(null);
+        setRejectReason('');
+      } else {
+        // Approve the leave request directly
+        // Note: The email notification was already sent when the leave was first submitted
+        const approveRes = await fetch(`/api/notify/leave-requests/${request.id}/approve-directly`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ userId: user?.id })
         });
-        if (!approveRes.ok) throw new Error('Approve failed');
+        if (!approveRes.ok) {
+          const errData = await approveRes.json().catch(() => ({}));
+          throw new Error(errData.message || 'Failed to approve leave request');
+        }
         toast({ title: "Success", description: "Leave request approved" });
       }
 
-      refetch();
+      // Refetch and wait for it to complete
+      await refetch();
+      console.log(`[LEAVE] Data refreshed after ${action} action`);
     } catch (err: any) {
+      console.error(`[LEAVE] Error in ${action}:`, err);
       toast({ title: "Error", description: err.message || "Action failed", variant: "destructive" });
     } finally {
       if (action === 'approve') setApprovingMap((s) => { const n = { ...s }; delete n[request.id]; return n; });
+      if (action === 'reject') setRejectingMap((s) => { const n = { ...s }; delete n[request.id]; return n; });
     }
   };
 
@@ -197,7 +223,7 @@ export default function LeaveRequestsList() {
                   </TableCell>
                 </TableRow>
               ) : (
-                items.map((item) => (
+                items.map((item: any) => (
                   <TableRow key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <TableCell>
                       <div className="font-medium text-slate-900 dark:text-white">{item.employeeName}</div>
@@ -244,6 +270,14 @@ export default function LeaveRequestsList() {
                           >
                             {approvingMap[item.id] ? '...' : 'Approve'}
                           </Button>
+                          <Button
+                            size="sm"
+                            className="h-8 bg-red-600 hover:bg-red-700 text-white border-none"
+                            onClick={() => setShowRejectModal(item.id)}
+                            disabled={rejectingMap[item.id]}
+                          >
+                            {rejectingMap[item.id] ? '...' : 'Reject'}
+                          </Button>
                         </div>
                       )}
                     </TableCell>
@@ -284,6 +318,63 @@ export default function LeaveRequestsList() {
           </div>
         </div>
       </CardContent>
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle>Reject Leave Request</CardTitle>
+              <button
+                onClick={() => {
+                  setShowRejectModal(null);
+                  setRejectReason('');
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Rejection Reason</label>
+                <Textarea
+                  placeholder="Provide a reason for rejecting this leave request..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  rows={4}
+                  className="resize-none"
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowRejectModal(null);
+                    setRejectReason('');
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => {
+                    if (showRejectModal) {
+                      const request = items.find((r: any) => r.id === showRejectModal);
+                      if (request) {
+                        handleAction('reject', request);
+                      }
+                    }
+                  }}
+                  disabled={!rejectReason.trim()}
+                >
+                  Reject Request
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </Card>
   );
 }

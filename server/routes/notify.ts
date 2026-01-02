@@ -140,6 +140,63 @@ router.post('/leave-requests', async (req: AuthRequest, res) => {
   }
 });
 
+// Manager approves leave directly using leave request ID (without creating notification)
+router.post('/leave-requests/:leaveRequestId/approve-directly', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const { leaveRequestId } = req.params;
+    console.log(`[APPROVE-EMAIL] Processing direct approval for leave request: ${leaveRequestId}`);
+
+    const leaveRequest = await dbStorage.getLeaveRequestById(leaveRequestId);
+    if (!leaveRequest) {
+      console.error(`[APPROVE-EMAIL] Leave request not found: ${leaveRequestId}`);
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+
+    // Update leave request status to approved
+    const updated = await dbStorage.updateLeaveRequestStatus(leaveRequestId, 'approved', req.user?.id);
+    console.log(`[APPROVE-EMAIL] Leave request updated: ${leaveRequestId}, status: approved`);
+
+    // Send approval notification email to employee
+    try {
+      console.log(`[APPROVE-EMAIL] Fetching employee for employeeId: ${leaveRequest.employeeId}`);
+      const employee = await dbStorage.getEmployeeByEmployeeId(leaveRequest.employeeId);
+      console.log(`[APPROVE-EMAIL] Employee found:`, employee?.email ? `email: ${employee.email}` : 'no email');
+      
+      if (employee && employee.email) {
+        const htmlBody = `
+          <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.4">
+            <div style="max-width:680px;margin:0 auto;padding:20px;border:1px solid #e6e6e6;border-radius:8px;background:#fff">
+              <h2 style="margin:0 0 12px 0;color:#0f172a">Leave Request Approved ✓</h2>
+              <p style="margin:0 0 18px 0;color:#334155">Your leave request has been approved.</p>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+                <tbody>
+                  <tr style="background:#f0fdf4">
+                    <td style="padding:8px 6px;font-weight:600;color:#0f172a;width:160px">Status</td>
+                    <td style="padding:8px 6px;color:#475569"><strong>Approved</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+              <p style="margin-top:18px;color:#94a3b8;font-size:12px">This is an automated message from your HR system.</p>
+            </div>
+          </div>
+        `;
+        console.log(`[APPROVE-EMAIL] Sending approval email to: ${employee.email}`);
+        await sendMail({ to: employee.email, subject: 'Your leave request has been approved', text: 'Your leave request has been approved.', html: htmlBody });
+        console.log(`[APPROVE-EMAIL] Approval notification sent to employee: ${employee.email}`);
+      } else {
+        console.warn(`[APPROVE-EMAIL] Employee not found or no email for employeeId: ${leaveRequest.employeeId}`);
+      }
+    } catch (emailErr) {
+      console.error('[APPROVE-EMAIL] Failed to send approval email to employee:', emailErr);
+    }
+
+    res.json({ message: 'Leave approved successfully', leaveRequest: updated });
+  } catch (error) {
+    console.error('[APPROVE-EMAIL] Error:', error);
+    res.status(500).json({ message: 'Failed to approve leave', error: (error as any).message || String(error) });
+  }
+});
+
 // Manager approves leave via this endpoint
 router.post('/leave-requests/:notificationId/approve', authenticateToken, async (req: AuthRequest, res) => {
   try {
@@ -151,11 +208,160 @@ router.post('/leave-requests/:notificationId/approve', authenticateToken, async 
   const approved = await dbStorage.approveNotification(notificationId, req.user?.id || note.manager_id);
 
   // update leave request status
-  await dbStorage.updateLeaveRequestStatus(note.reference_id, 'approved', req.user?.id || note.manager_id);
+  const leaveRequest = await dbStorage.updateLeaveRequestStatus(note.reference_id, 'approved', req.user?.id || note.manager_id);
+
+  // Send approval notification email to employee
+  try {
+    const employee = await dbStorage.getEmployeeByEmployeeId(leaveRequest?.employeeId);
+    if (employee && employee.email) {
+      const htmlBody = `
+        <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.4">
+          <div style="max-width:680px;margin:0 auto;padding:20px;border:1px solid #e6e6e6;border-radius:8px;background:#fff">
+            <h2 style="margin:0 0 12px 0;color:#0f172a">Leave Request Approved ✓</h2>
+            <p style="margin:0 0 18px 0;color:#334155">Your leave request has been approved.</p>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+              <tbody>
+                <tr style="background:#f0fdf4">
+                  <td style="padding:8px 6px;font-weight:600;color:#0f172a;width:160px">Status</td>
+                  <td style="padding:8px 6px;color:#475569"><strong>Approved</strong></td>
+                </tr>
+              </tbody>
+            </table>
+            <p style="margin-top:18px;color:#94a3b8;font-size:12px">This is an automated message from your HR system.</p>
+          </div>
+        </div>
+      `;
+      await sendMail({ to: employee.email, subject: 'Your leave request has been approved', text: 'Your leave request has been approved.', html: htmlBody });
+      console.log('Approval notification sent to employee:', employee.email);
+    }
+  } catch (emailErr) {
+    console.error('Failed to send approval email to employee:', emailErr);
+  }
 
   res.json({ message: 'Leave approved', notification: approved });
   } catch (error) {
     res.status(500).json({ message: 'Failed to approve leave', error });
+  }
+});
+
+// Manager rejects leave via this endpoint - NEW ENDPOINT that works directly with leave request ID
+router.post('/reject-leave/:leaveRequestId', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+  const { leaveRequestId } = req.params;
+  const { reason } = req.body;
+  
+  console.log(`[REJECT] Processing direct rejection for leave request: ${leaveRequestId}, reason: ${reason}`);
+
+  const leaveRequest = await dbStorage.getLeaveRequestById(leaveRequestId);
+  if (!leaveRequest) {
+    console.error(`[REJECT] Leave request not found: ${leaveRequestId}`);
+    return res.status(404).json({ message: 'Leave request not found' });
+  }
+
+  // Update leave request status to rejected (does NOT deduct leave balance)
+  const updated = await dbStorage.updateLeaveRequestStatus(leaveRequestId, 'rejected', req.user?.id);
+  console.log(`[REJECT] Leave request updated: ${leaveRequestId}, status: rejected`);
+
+  // Send rejection notification email to employee
+  try {
+    const employee = await dbStorage.getEmployeeByEmployeeId(leaveRequest.employeeId);
+    if (employee && employee.email) {
+      const htmlBody = `
+        <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.4">
+          <div style="max-width:680px;margin:0 auto;padding:20px;border:1px solid #e6e6e6;border-radius:8px;background:#fff">
+            <h2 style="margin:0 0 12px 0;color:#0f172a">Leave Request Rejected</h2>
+            <p style="margin:0 0 18px 0;color:#334155">Your leave request has been rejected.</p>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+              <tbody>
+                <tr style="background:#fef2f2">
+                  <td style="padding:8px 6px;font-weight:600;color:#0f172a;width:160px">Status</td>
+                  <td style="padding:8px 6px;color:#475569"><strong>Rejected</strong></td>
+                </tr>
+                ${reason ? `<tr style="background:#fef2f2">
+                  <td style="padding:8px 6px;font-weight:600;color:#0f172a">Reason</td>
+                  <td style="padding:8px 6px;color:#475569">${escapeHtml(reason)}</td>
+                </tr>` : ''}
+              </tbody>
+            </table>
+            <p style="margin-top:18px;color:#94a3b8;font-size:12px">This is an automated message from your HR system.</p>
+          </div>
+        </div>
+      `;
+      await sendMail({ to: employee.email, subject: 'Your leave request has been rejected', text: `Your leave request has been rejected.${reason ? ` Reason: ${reason}` : ''}`, html: htmlBody });
+      console.log('Rejection notification sent to employee:', employee.email);
+    }
+  } catch (emailErr) {
+    console.error('Failed to send rejection email to employee:', emailErr);
+  }
+
+  res.json({ message: 'Leave rejected successfully', leaveRequest: updated });
+  } catch (error) {
+    console.error('[REJECT] Error:', error);
+    res.status(500).json({ message: 'Failed to reject leave', error: (error as any).message || String(error) });
+  }
+});
+
+// Manager rejects leave via this endpoint (OLD - kept for backward compatibility)
+router.post('/leave-requests/:notificationId/reject', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+  const { notificationId } = req.params;
+  const { reason } = req.body;
+  
+  console.log(`[REJECT] Processing rejection for notification: ${notificationId}, reason: ${reason}`);
+
+  const note = await dbStorage.getNotificationById(notificationId);
+  if (!note) {
+    console.error(`[REJECT] Notification not found: ${notificationId}`);
+    return res.status(404).json({ message: 'Notification not found' });
+  }
+
+  // mark notification rejected in DB
+  const rejected = await dbStorage.rejectNotification(notificationId, req.user?.id || note.manager_id, reason);
+  console.log(`[REJECT] Notification rejected successfully: ${notificationId}`);
+
+  // update leave request status to rejected (does NOT deduct leave balance)
+  const updated = await dbStorage.updateLeaveRequestStatus(note.reference_id, 'rejected', req.user?.id || note.manager_id);
+  console.log(`[REJECT] Leave request updated: ${note.reference_id}, status: rejected`);
+
+  // Send rejection notification email to employee
+  try {
+    const leaveRequest = await dbStorage.getLeaveRequestById(note.reference_id);
+    if (leaveRequest) {
+      const employee = await dbStorage.getEmployeeByEmployeeId(leaveRequest.employeeId);
+      if (employee && employee.email) {
+        const htmlBody = `
+          <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.4">
+            <div style="max-width:680px;margin:0 auto;padding:20px;border:1px solid #e6e6e6;border-radius:8px;background:#fff">
+              <h2 style="margin:0 0 12px 0;color:#0f172a">Leave Request Rejected</h2>
+              <p style="margin:0 0 18px 0;color:#334155">Your leave request has been rejected.</p>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+                <tbody>
+                  <tr style="background:#fef2f2">
+                    <td style="padding:8px 6px;font-weight:600;color:#0f172a;width:160px">Status</td>
+                    <td style="padding:8px 6px;color:#475569"><strong>Rejected</strong></td>
+                  </tr>
+                  ${reason ? `<tr style="background:#fef2f2">
+                    <td style="padding:8px 6px;font-weight:600;color:#0f172a">Reason</td>
+                    <td style="padding:8px 6px;color:#475569">${escapeHtml(reason)}</td>
+                  </tr>` : ''}
+                </tbody>
+              </table>
+              <p style="margin-top:18px;color:#94a3b8;font-size:12px">This is an automated message from your HR system.</p>
+            </div>
+          </div>
+        `;
+        await sendMail({ to: employee.email, subject: 'Your leave request has been rejected', text: `Your leave request has been rejected.${reason ? ` Reason: ${reason}` : ''}`, html: htmlBody });
+        console.log('Rejection notification sent to employee:', employee.email);
+      }
+    }
+  } catch (emailErr) {
+    console.error('Failed to send rejection email to employee:', emailErr);
+  }
+
+  res.json({ message: 'Leave rejected successfully', notification: rejected, leaveRequest: updated });
+  } catch (error) {
+    console.error('[REJECT] Error:', error);
+    res.status(500).json({ message: 'Failed to reject leave', error: (error as any).message || String(error) });
   }
 });
 

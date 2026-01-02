@@ -182,7 +182,7 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
       const allEmployees = await dbStorage.getEmployees();
       const manager = allEmployees.find((e: any) => (e.role || '').toLowerCase().includes('manager'));
       if (!manager) {
-        console.warn('No manager found to notify for leave request', leaveRequest.id);
+        console.warn('[LEAVE-EMAIL] No manager found to notify for leave request', leaveRequest.id);
       } else {
         const managerIdToNotify = manager.userId || manager.id;
 
@@ -195,40 +195,60 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
           payload: { createdAt: new Date().toISOString() }
         });
         if (note && note.id) leaveRequest.notificationId = note.id;
+      }
 
-        // Determine recipients from environment variable
-        const rawRecipients = process.env.LEAVE_NOTIFICATION_EMAILS || '';
-        const recipients = rawRecipients.split(',').map(s => s.trim()).filter(Boolean);
-        if (recipients.length === 0) {
-          console.warn('No leave notification recipients configured (LEAVE_NOTIFICATION_EMAILS). Skipping email send.');
-        } else {
-          const leaveDetails = await dbStorage.getLeaveRequestById(leaveRequest.id).catch(() => null);
-          const htmlBody = buildLeaveRequestEmailHtml(leaveDetails || leaveRequest);
+      // Send email regardless of whether manager was found
+      // Determine recipients from environment variable, with hardcoded defaults as fallback
+      const rawRecipients = process.env.LEAVE_NOTIFICATION_EMAILS || '';
+      let recipients = rawRecipients.split(',').map(s => s.trim()).filter(Boolean);
+      
+      // Use hardcoded recipients as fallback if environment variable is not configured
+      if (recipients.length === 0) {
+        recipients = ['karthik.s@progencislabs.com', 'digitalsales@progenicslabs.com', 'pavithra.rk@progenicslabs.com', 'swapnil@progenicslabs.com', 'arunapriya@progenicslabs.com'];
+        console.log('[LEAVE-EMAIL] Using default leave notification recipients (LEAVE_NOTIFICATION_EMAILS not configured)');
+      }
+      
+      console.log('[LEAVE-EMAIL] Leave request created:', leaveRequest.id);
+      console.log('[LEAVE-EMAIL] Recipients list:', recipients);
+      
+      if (recipients.length === 0) {
+        console.warn('[LEAVE-EMAIL] No leave notification recipients configured. Skipping email send.');
+      } else {
+        // Use the leave request object we already have instead of querying DB again
+        const htmlBody = buildLeaveRequestEmailHtml(leaveRequest);
+        console.log('[LEAVE-EMAIL] HTML body generated, length:', htmlBody.length);
 
-          // Send emails concurrently but capture all results
-          const sendPromises = recipients.map((to) =>
-            sendMail({ to, subject: 'New leave request awaiting your approval', text: `A new leave request (${leaveRequest.id}) needs your approval.`, html: htmlBody })
-              .then((result: any) => ({ to, ok: true, result }))
-              .catch((err: any) => ({ to, ok: false, err }))
-          );
+        // Send emails concurrently but capture all results
+        const sendPromises = recipients.map((to) => {
+          console.log('[LEAVE-EMAIL] Sending email to:', to);
+          return sendMail({ to, subject: 'New leave request awaiting your approval', text: `A new leave request (${leaveRequest.id}) needs your approval.`, html: htmlBody })
+            .then((result: any) => {
+              console.log('[LEAVE-EMAIL] Email sent successfully to:', to);
+              return { to, ok: true, result };
+            })
+            .catch((err: any) => {
+              console.error('[LEAVE-EMAIL] Email send failed for:', to, err);
+              return { to, ok: false, err };
+            });
+        });
 
-          const settled = await Promise.all(sendPromises);
-          for (const r of settled) {
-            if (r.ok) {
-              const previewUrl = (r as { to: string; ok: true; result: any }).result?.previewUrl || (r as { to: string; ok: true; result: any }).result?.info?.previewUrl;
-              if (previewUrl) {
-                leaveRequest.previewUrls = leaveRequest.previewUrls || [];
-                leaveRequest.previewUrls.push(previewUrl);
-              }
-              console.log('Leave notification sent to', r.to);
-            } else {
-              console.error('Failed to send leave notification to', r.to, (r as { to: string; ok: false; err: any }).err);
+        const settled = await Promise.all(sendPromises);
+        for (const r of settled) {
+          if (r.ok) {
+            const previewUrl = (r as { to: string; ok: true; result: any }).result?.previewUrl || (r as { to: string; ok: true; result: any }).result?.info?.previewUrl;
+            if (previewUrl) {
+              leaveRequest.previewUrls = leaveRequest.previewUrls || [];
+              leaveRequest.previewUrls.push(previewUrl);
+              console.log('[LEAVE-EMAIL] Preview URL:', previewUrl);
             }
+            console.log('[LEAVE-EMAIL] Leave notification sent to', r.to);
+          } else {
+            console.error('[LEAVE-EMAIL] Failed to send leave notification to', r.to, (r as { to: string; ok: false; err: any }).err);
           }
         }
       }
     } catch (err) {
-      console.error('Failed to create notification or send mails for leave:', err);
+      console.error('[LEAVE-EMAIL] Failed to create notification or send mails for leave:', err);
     }
 
     res.status(201).json({ message: 'Leave request submitted successfully', data: leaveRequest });

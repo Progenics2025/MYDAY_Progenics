@@ -145,7 +145,7 @@ export default function Dashboard() {
       </div>
 
       {/* Mobile Sidebar */}
-      <div className={`md:hidden fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      <div className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
         <Sidebar
           activeSection={activeSection}
@@ -158,12 +158,17 @@ export default function Dashboard() {
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden pointer-events-auto"
           onClick={() => setSidebarOpen(false)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setSidebarOpen(false);
+          }}
         />
       )}
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         {/* Desktop Header */}
         <div className="hidden md:block">
           <Header
@@ -175,10 +180,10 @@ export default function Dashboard() {
         {/* Mobile Header */}
         <MobileHeader
           title={getSectionTitle(activeSection)}
-          onMenuClick={() => setSidebarOpen(true)}
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        <main className="flex-1 overflow-auto p-4 md:p-6 pb-32 md:pb-6">
+        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-20 sm:pb-24 md:pb-6">
           {renderContent()}
         </main>
       </div>
@@ -234,17 +239,17 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
       {/* Stats Row - Role Based Visibility */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {/* Total Employees (Admin/HR) */}
         {isAdminOrHR && (
           <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
-            <CardContent className="p-6 flex items-center justify-between">
+            <CardContent className="p-3 sm:p-4 md:p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Employees</p>
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.totalEmployees || 124}</h3>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Total Employees</p>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.totalEmployees || 124}</h3>
               </div>
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
-                <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              <div className="p-2 sm:p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
             </CardContent>
           </Card>
@@ -253,13 +258,13 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
         {/* Present Today (Admin/Manager) */}
         {isAdminOrManager && (
           <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
-            <CardContent className="p-6 flex items-center justify-between">
+            <CardContent className="p-3 sm:p-4 md:p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Present Today</p>
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.presentToday || 0}</h3>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Present Today</p>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.presentToday || 0}</h3>
               </div>
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
-                <UserCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2 sm:p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                <UserCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </CardContent>
           </Card>
@@ -268,13 +273,13 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
         {/* On Leave (Admin/Manager) */}
         {isAdminOrManager && (
           <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
-            <CardContent className="p-6 flex items-center justify-between">
+            <CardContent className="p-3 sm:p-4 md:p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">On Leave</p>
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.onLeave || 0}</h3>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">On Leave</p>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats?.onLeave || 0}</h3>
               </div>
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                <CalendarX className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              <div className="p-2 sm:p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                <CalendarX className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400" />
               </div>
             </CardContent>
           </Card>
@@ -283,13 +288,13 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
         {/* Payroll Due (Admin/HR) */}
         {isAdminOrHR && (
           <Card className="border-none shadow-xl bg-white dark:bg-slate-800 hover:shadow-2xl transition-shadow duration-300">
-            <CardContent className="p-6 flex items-center justify-between">
+            <CardContent className="p-3 sm:p-4 md:p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Payroll Due</p>
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mt-2">₹{stats?.payrollDue?.toLocaleString() || '12.5L'}</h3>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Payroll Due</p>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-2">₹{stats?.payrollDue?.toLocaleString() || '12.5L'}</h3>
               </div>
-              <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl">
-                <DollarSign className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+              <div className="p-2 sm:p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-rose-600 dark:text-rose-400" />
               </div>
             </CardContent>
           </Card>
@@ -297,33 +302,33 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-8">
 
         {/* Left Column: Leave Balances & Calendar */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="md:col-span-2 lg:col-span-2 space-y-4 md:space-y-8">
 
           {/* My Leave Balances */}
           <Card className="border-none shadow-xl bg-white dark:bg-slate-800">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">My Leave Balances</h3>
-              <span className="text-sm font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
+            <div className="p-3 sm:p-4 md:p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">My Leave Balances</h3>
+              <span className="text-xs sm:text-sm font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
                 Total Remaining: {(Number(balances?.casualLeave) || 0) + (Number(balances?.sickLeave) || 0) + (Number(balances?.earnedLeave) || 0)} Days
               </span>
             </div>
-            <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
-                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Casual Leave</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.casualLeave) || 0}/{totalCasual}</p>
+            <CardContent className="p-3 sm:p-4 md:p-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+              <div className="bg-blue-50 dark:bg-blue-900/10 p-3 sm:p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Casual Leave</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.casualLeave) || 0}/{totalCasual}</p>
                 <p className="text-xs text-slate-400 mt-1">Available</p>
               </div>
-              <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800">
-                <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">Sick Leave</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.sickLeave) || 0}/{totalSick}</p>
+              <div className="bg-emerald-50 dark:bg-emerald-900/10 p-3 sm:p-4 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">Sick Leave</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.sickLeave) || 0}/{totalSick}</p>
                 <p className="text-xs text-slate-400 mt-1">Available</p>
               </div>
-              <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-800">
-                <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">Earned Leave</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.earnedLeave) || 0}/{totalEarned}</p>
+              <div className="bg-amber-50 dark:bg-amber-900/10 p-3 sm:p-4 rounded-xl border border-amber-100 dark:border-amber-800">
+                <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">Earned Leave</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{Number(balances?.earnedLeave) || 0}/{totalEarned}</p>
                 <p className="text-xs text-slate-400 mt-1">Available</p>
               </div>
             </CardContent>
@@ -335,53 +340,53 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
         </div>
 
         {/* Right Column: Quick Actions & Recent Activity */}
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
 
           {/* Quick Actions */}
           <Card className="border-none shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden">
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-lg font-semibold flex items-center text-white">
-                <TrendingUp className="w-5 h-5 mr-2 text-emerald-400" />
+            <div className="p-3 sm:p-4 md:p-6 border-b border-white/10">
+              <h3 className="text-base sm:text-lg font-semibold flex items-center text-white">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-emerald-400" />
                 Quick Actions
               </h3>
             </div>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 {/* Admin Only Actions */}
                 {user?.role === 'admin' && (
-                  <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('employees')}>
-                    <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                      <Users className="w-5 h-5 text-indigo-400" />
+                  <button className="flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('employees')}>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-500/20 flex items-center justify-center mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                      <Users className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
                     </div>
                     <span className="text-xs font-bold text-white group-hover:text-indigo-200">Add Staff</span>
                   </button>
                 )}
 
                 {/* Common Actions */}
-                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('attendance')}>
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Clock className="w-5 h-5 text-blue-400" />
+                <button className="flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('attendance')}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                   </div>
                   <span className="text-xs font-bold text-white group-hover:text-blue-200">Attendance</span>
                 </button>
 
-                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('leave')}>
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Calendar className="w-5 h-5 text-emerald-400" />
+                <button className="flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('leave')}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
                   </div>
                   <span className="text-xs font-bold text-white group-hover:text-emerald-200">Apply Leave</span>
                 </button>
 
-                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('expenses')}>
-                  <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Receipt className="w-5 h-5 text-amber-400" />
+                <button className="flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('expenses')}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-amber-500/20 flex items-center justify-center mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                    <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
                   </div>
                   <span className="text-xs font-bold text-white group-hover:text-amber-200">Expense</span>
                 </button>
 
-                <button className="flex flex-col items-center justify-center p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('profile')}>
-                  <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <UserCircle className="w-5 h-5 text-violet-400" />
+                <button className="flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/5 hover:border-white/20 group" onClick={() => setActiveSection('profile')}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-violet-500/20 flex items-center justify-center mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                    <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-violet-400" />
                   </div>
                   <span className="text-xs font-bold text-white group-hover:text-violet-200">Profile</span>
                 </button>
@@ -391,19 +396,19 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
 
           {/* Recent Activity */}
           <Card className="border-none shadow-xl bg-white dark:bg-slate-800">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700">
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">Recent Activity</h3>
+            <div className="p-3 sm:p-4 md:p-6 border-b border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">Recent Activity</h3>
             </div>
-            <CardContent className="p-6">
-              <div className="space-y-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="space-y-4 md:space-y-6">
                 {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex space-x-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activity.bg}`}>
-                      <activity.icon className={`w-5 h-5 ${activity.color}`} />
+                  <div key={activity.id} className="flex space-x-3 sm:space-x-4">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activity.bg}`}>
+                      <activity.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${activity.color}`} />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{activity.title}</h4>
-                      <p className="text-xs text-slate-500 mt-1">{activity.desc}</p>
+                    <div className="min-w-0">
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">{activity.title}</h4>
+                      <p className="text-xs text-slate-500 mt-1 break-words">{activity.desc}</p>
                       <span className="text-[10px] font-medium text-slate-400 mt-2 block">{activity.time}</span>
                     </div>
                   </div>

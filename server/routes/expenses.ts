@@ -31,6 +31,7 @@ const expenseSchema = z.object({
   description: z.string().optional(),
 });
 
+// POST - Create a new expense
 router.post('/', upload.single('receipt'), async (req: AuthRequest, res) => {
   try {
     const data = expenseSchema.parse(req.body);
@@ -73,6 +74,83 @@ router.post('/', upload.single('receipt'), async (req: AuthRequest, res) => {
   }
 });
 
+// SPECIFIC ROUTES MUST COME BEFORE PARAMETERIZED ROUTES
+// GET /all - Admin-only: fetch all expenses
+router.get('/all', async (req: AuthRequest, res) => {
+  try {
+    const userRole = (req.user as any)?.role;
+    if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
+      return res.status(403).json({ message: 'Insufficient permissions' });
+    }
+
+  const page = parseInt((req.query.page as string) || '1', 10) || 1;
+  const pageSize = parseInt((req.query.pageSize as string) || '10', 10) || 10;
+  const status = (req.query.status as string) || undefined;
+  const q = (req.query.q as string) || undefined;
+
+  const paged = await dbStorage.getAllExpensesPaged(page, pageSize, { status, q });
+  res.json(paged);
+  } catch (error) {
+  console.error('GET /api/expenses/all error:', error);
+  res.status(500).json({ message: 'Failed to fetch all expenses', error: String(error) });
+  }
+});
+
+// PATCH /:id/approve - Admin-only: approve an expense
+router.patch('/:id/approve', async (req: AuthRequest, res) => {
+  try {
+    const userRole = (req.user as any)?.role;
+    if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
+      return res.status(403).json({ message: 'Insufficient permissions' });
+    }
+
+    const { id } = req.params;
+    const approverName = (req.user as any)?.name || (req.user as any)?.id || 'Unknown';
+
+    if (!id) {
+      return res.status(400).json({ message: 'Expense ID is required' });
+    }
+
+    // Update expense status to approved
+    const updated = await dbStorage.updateExpenseStatus(id, 'approved', approverName);
+    if (!updated) {
+      return res.status(404).json({ message: 'Expense not found' });
+    }
+    res.json({ message: 'Expense approved successfully', data: updated });
+  } catch (error) {
+    console.error('PATCH /api/expenses/:id/approve error:', error);
+    res.status(500).json({ message: 'Failed to approve expense', error: String(error) });
+  }
+});
+
+// PATCH /:id/reject - Admin-only: reject an expense
+router.patch('/:id/reject', async (req: AuthRequest, res) => {
+  try {
+    const userRole = (req.user as any)?.role;
+    if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
+      return res.status(403).json({ message: 'Insufficient permissions' });
+    }
+
+    const { id } = req.params;
+    const approverName = (req.user as any)?.name || (req.user as any)?.id || 'Unknown';
+
+    if (!id) {
+      return res.status(400).json({ message: 'Expense ID is required' });
+    }
+
+    // Update expense status to rejected
+    const updated = await dbStorage.updateExpenseStatus(id, 'rejected', approverName);
+    if (!updated) {
+      return res.status(404).json({ message: 'Expense not found' });
+    }
+    res.json({ message: 'Expense rejected successfully', data: updated });
+  } catch (error) {
+    console.error('PATCH /api/expenses/:id/reject error:', error);
+    res.status(500).json({ message: 'Failed to reject expense', error: String(error) });
+  }
+});
+
+// GET / - Get user's own expenses
 router.get('/', async (req: AuthRequest, res) => {
   try {
     const user = req.user as any;
@@ -97,27 +175,6 @@ router.get('/', async (req: AuthRequest, res) => {
   res.json(paged);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch expenses', error });
-  }
-});
-
-// Admin-only: fetch all expenses
-router.get('/all', async (req: AuthRequest, res) => {
-  try {
-    const userRole = (req.user as any)?.role;
-    if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
-      return res.status(403).json({ message: 'Insufficient permissions' });
-    }
-
-  const page = parseInt((req.query.page as string) || '1', 10) || 1;
-  const pageSize = parseInt((req.query.pageSize as string) || '10', 10) || 10;
-  const status = (req.query.status as string) || undefined;
-  const q = (req.query.q as string) || undefined;
-
-  const paged = await dbStorage.getAllExpensesPaged(page, pageSize, { status, q });
-  res.json(paged);
-  } catch (error) {
-  console.error('GET /api/expenses/all error:', error);
-  res.status(500).json({ message: 'Failed to fetch all expenses', error: String(error) });
   }
 });
 

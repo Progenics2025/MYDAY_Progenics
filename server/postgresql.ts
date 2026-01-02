@@ -367,6 +367,7 @@ export class PostgresStorage {
       const existing = lrRes.rows[0];
 
       const now = new Date().toISOString();
+      console.log(`[UPDATE_STATUS] Leave request ${id}, transitioning from ${existing.status} to ${status}`);
 
       // If transitioning to approved and it wasn't already approved, deduct leave
       if (status === 'approved' && existing.status !== 'approved') {
@@ -394,9 +395,12 @@ export class PostgresStorage {
           }
 
           if (updateSql) {
-            await client.query(updateSql, params);
+            const empUpdateRes = await client.query(updateSql, params);
+            console.log(`[UPDATE_STATUS] Deducted ${toDeduct} days of ${leaveType} from employee ${empId}`);
           }
         }
+      } else if (status === 'rejected') {
+        console.log(`[UPDATE_STATUS] Leave request rejected - NO leave balance deducted`);
       }
 
       // Update leave_requests row
@@ -405,9 +409,11 @@ export class PostgresStorage {
       const updRes = await client.query(updSql, updVals);
 
       await client.query('COMMIT');
+      console.log(`[UPDATE_STATUS] Leave request ${id} status updated to ${status}`);
       return updRes.rows[0];
     } catch (err) {
       try { await client.query('ROLLBACK'); } catch (_) { }
+      console.error('[UPDATE_STATUS] Error:', err);
       throw err;
     } finally {
       client.release();
@@ -460,6 +466,20 @@ export class PostgresStorage {
   async approveNotification(id: string, approvedBy: string): Promise<any> {
     const sql = `UPDATE notifications SET status = $1, approved_by = $2, approved_at = NOW(), updated_at = NOW() WHERE id = $3 RETURNING *`;
     const result = await this.pool.query(sql, ['approved', approvedBy, id]);
+    return result.rows[0];
+  }
+
+  async rejectNotification(id: string, rejectedBy: string, reason?: string): Promise<any> {
+    // Handle null payload by initializing it if needed, then set rejection reason
+    const sql = `UPDATE notifications 
+      SET status = $1, 
+          approved_by = $2, 
+          approved_at = NOW(), 
+          payload = COALESCE(payload, '{}'::jsonb) || jsonb_build_object('rejectionReason', $3),
+          updated_at = NOW() 
+      WHERE id = $4 
+      RETURNING *`;
+    const result = await this.pool.query(sql, ['rejected', rejectedBy, reason || '', id]);
     return result.rows[0];
   }
 

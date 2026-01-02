@@ -70,7 +70,7 @@ export default function Sidebar({ activeSection, onSectionChange, isOpen, onClos
     <>
       <div
         className={cn(
-          "bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 transition-all duration-300 ease-in-out fixed md:relative z-50 h-full flex flex-col shadow-xl",
+          "bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 transition-all duration-300 ease-in-out md:relative z-auto h-full flex flex-col shadow-xl",
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           isCollapsed ? "w-20" : "w-72"
         )}
@@ -140,7 +140,10 @@ export default function Sidebar({ activeSection, onSectionChange, isOpen, onClos
         {/* Bottom Actions */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
           <button
-            onClick={() => onSectionChange('profile')}
+            onClick={() => {
+              onSectionChange('profile');
+              if (window.innerWidth < 768) onClose();
+            }}
             className={cn(
               "w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 group hover:bg-slate-50 dark:hover:bg-slate-800",
               activeSection === 'profile' && "bg-slate-100 dark:bg-slate-800"
