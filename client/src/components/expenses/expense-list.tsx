@@ -161,7 +161,7 @@ export default function ExpenseList() {
                   <td className="px-4 py-3 text-sm text-foreground">{exp.category}</td>
                   <td className="px-4 py-3 text-sm text-foreground text-right">₹{Number(exp.amount).toFixed(2)}</td>
                   <td className="px-4 py-3 text-sm">
-                    {exp.status === 'pending' ? (
+                    {exp.status === 'pending' && (user?.role === 'admin' || user?.role === 'manager') ? (
                       <div className="flex items-center gap-2">
                         <Button
                           onClick={() => handleApprove(exp.id)}
@@ -182,8 +182,8 @@ export default function ExpenseList() {
                         </Button>
                       </div>
                     ) : (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${exp.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {exp.status === 'approved' ? 'Approved' : 'Rejected'}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${exp.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : exp.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {exp.status === 'pending' ? 'Pending' : exp.status === 'approved' ? 'Approved' : 'Rejected'}
                       </span>
                     )}
                   </td>
