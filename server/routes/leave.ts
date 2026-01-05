@@ -11,43 +11,98 @@ import fs from 'fs';
 // Build the HTML body for leave request notifications so it can be reused
 function buildLeaveRequestEmailHtml(leaveDetails: any) {
   if (!leaveDetails) return `Leave Request ID: ${leaveDetails?.id || ''}`;
+  
+  const getStatusBadgeColor = (status: string) => {
+    switch((status || '').toLowerCase()) {
+      case 'approved': return '#10b981';
+      case 'rejected': return '#ef4444';
+      case 'pending': return '#f59e0b';
+      default: return '#6b7280';
+    }
+  };
+  
+  const statusColor = getStatusBadgeColor(leaveDetails?.status);
+  
   return `
-    <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.4">
-      <div style="max-width:680px;margin:0 auto;padding:20px;border:1px solid #e6e6e6;border-radius:8px;background:#fff">
-        <h2 style="margin:0 0 12px 0;color:#0f172a">New Leave Request</h2>
-        <p style="margin:0 0 18px 0;color:#334155">A new leave request is awaiting your review. Details are below.</p>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
-          <tbody>
-            <tr>
-              <td style="padding:8px 6px;font-weight:600;color:#0f172a;width:160px">Employee</td>
-              <td style="padding:8px 6px;color:#475569">${leaveDetails?.employeeName || leaveDetails?.employeeId || ''} (${leaveDetails?.employeeId || ''})</td>
-            </tr>
-            <tr style="background:#fafafa">
-              <td style="padding:8px 6px;font-weight:600;color:#0f172a">Leave Type</td>
-              <td style="padding:8px 6px;color:#475569">${leaveDetails?.leaveType || ''}</td>
-            </tr>
-            <tr>
-              <td style="padding:8px 6px;font-weight:600;color:#0f172a">Start Date</td>
-              <td style="padding:8px 6px;color:#475569">${leaveDetails?.startDate ? new Date(leaveDetails.startDate).toLocaleDateString() : ''}</td>
-            </tr>
-            <tr style="background:#fafafa">
-              <td style="padding:8px 6px;font-weight:600;color:#0f172a">End Date</td>
-              <td style="padding:8px 6px;color:#475569">${leaveDetails?.endDate ? new Date(leaveDetails.endDate).toLocaleDateString() : ''}</td>
-            </tr>
-            <tr>
-              <td style="padding:8px 6px;font-weight:600;color:#0f172a">Total Days</td>
-              <td style="padding:8px 6px;color:#475569">${String(leaveDetails?.totalDays || '')}</td>
-            </tr>
-            <tr style="background:#fafafa">
-              <td style="padding:8px 6px;font-weight:600;color:#0f172a">Reason</td>
-              <td style="padding:8px 6px;color:#475569">${leaveDetails?.reason || ''}</td>
-            </tr>
-            <tr>
-              <td style="padding:8px 6px;font-weight:600;color:#0f172a">Status</td>
-              <td style="padding:8px 6px;color:#475569">${leaveDetails?.status || ''}</td>
-            </tr>
-          </tbody>
-        </table>
+    <div style="font-family:'Segoe UI',Arial,Helvetica,sans-serif;color:#1f2937;line-height:1.6;background:#f9fafb;padding:20px">
+      <div style="max-width:700px;margin:0 auto">
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:30px">
+          <h1 style="margin:0;font-size:28px;color:#0f172a;font-weight:700">Leave Request Notification</h1>
+          <p style="margin:8px 0 0 0;color:#6b7280;font-size:14px">A new leave request requires your attention</p>
+        </div>
+
+        <!-- Main Content Box -->
+        <div style="background:#fff;border-radius:12px;padding:30px;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:20px">
+          
+          <!-- Employee Info Section -->
+          <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e5e7eb">
+            <h3 style="margin:0 0 16px 0;color:#0f172a;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280">Employee Information</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+              <!-- Employee Name -->
+              <div style="padding:12px;background:#f3f4f6;border-radius:8px;border-left:4px solid #3b82f6">
+                <p style="margin:0 0 4px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Employee Name</p>
+                <p style="margin:0;font-size:16px;color:#0f172a;font-weight:700">${leaveDetails?.employeeName || 'N/A'}</p>
+              </div>
+              <!-- Employee ID -->
+              <div style="padding:12px;background:#f3f4f6;border-radius:8px;border-left:4px solid #8b5cf6">
+                <p style="margin:0 0 4px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Employee ID</p>
+                <p style="margin:0;font-size:16px;color:#0f172a;font-weight:700">${leaveDetails?.employeeId || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Section -->
+          <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e5e7eb">
+            <h3 style="margin:0 0 16px 0;color:#0f172a;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280">Request Status</h3>
+            <div style="padding:16px;background:#f3f4f6;border-radius:8px;border-left:4px solid ${statusColor}">
+              <div style="display:inline-block;padding:6px 16px;background:${statusColor};color:#fff;border-radius:20px;font-weight:600;font-size:14px;text-transform:uppercase">
+                ${leaveDetails?.status || 'Pending'}
+              </div>
+            </div>
+          </div>
+
+          <!-- Reason Section -->
+          <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e5e7eb">
+            <h3 style="margin:0 0 16px 0;color:#0f172a;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280">Reason for Leave</h3>
+            <div style="padding:16px;background:#f9fafb;border-radius:8px;border-left:4px solid #10b981">
+              <p style="margin:0;color:#374151;font-size:14px;line-height:1.6">${leaveDetails?.reason || 'No reason provided'}</p>
+            </div>
+          </div>
+
+          <!-- Leave Details Grid -->
+          <div style="margin-bottom:20px">
+            <h3 style="margin:0 0 16px 0;color:#0f172a;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280">Leave Details</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <!-- Leave Type -->
+              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Leave Type</p>
+                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600;text-transform:capitalize">${leaveDetails?.leaveType || 'N/A'}</p>
+              </div>
+              <!-- Total Days -->
+              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Total Days</p>
+                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${String(leaveDetails?.totalDays || '0')} Day(s)</p>
+              </div>
+              <!-- Start Date -->
+              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Start Date</p>
+                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${leaveDetails?.startDate ? new Date(leaveDetails.startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</p>
+              </div>
+              <!-- End Date -->
+              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">End Date</p>
+                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${leaveDetails?.endDate ? new Date(leaveDetails.endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align:center;color:#6b7280;font-size:12px;padding:20px;border-top:1px solid #e5e7eb">
+          <p style="margin:0">Request ID: <strong>${leaveDetails?.id || 'N/A'}</strong></p>
+          <p style="margin:8px 0 0 0">This is an automated notification. Please do not reply to this email.</p>
+        </div>
       </div>
     </div>
   `;
