@@ -200,6 +200,39 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
       return res.status(400).json({ message: 'Invalid leave type' });
     }
 
+    // Validate leave balance before allowing the request
+    try {
+      const leaveBalances = await dbStorage.getLeaveBalances(employeeId);
+      if (!leaveBalances) {
+        return res.status(400).json({ message: 'Unable to fetch leave balance. Please contact HR.' });
+      }
+
+      const leaveTypeKey = `${data.leaveType.toLowerCase()}Leave`;
+      const availableBalance = leaveBalances[leaveTypeKey as keyof typeof leaveBalances] || 0;
+      const requestedDays = totalDays || 0;
+
+      console.log(`[LEAVE-BALANCE] Employee: ${employeeId}, Type: ${data.leaveType}, Available: ${availableBalance}, Requested: ${requestedDays}`);
+
+      if (availableBalance <= 0) {
+        return res.status(400).json({ 
+          message: `You do not have any ${data.leaveType.toLowerCase()} leave balance available.`,
+          availableBalance: 0,
+          requestedDays: requestedDays
+        });
+      }
+
+      if (availableBalance < requestedDays) {
+        return res.status(400).json({ 
+          message: `Insufficient ${data.leaveType.toLowerCase()} leave balance. You have ${availableBalance} days available but requested ${requestedDays} days.`,
+          availableBalance: availableBalance,
+          requestedDays: requestedDays
+        });
+      }
+    } catch (err) {
+      console.error('Error checking leave balance:', err);
+      return res.status(500).json({ message: 'Failed to validate leave balance' });
+    }
+
     // If sick leave for more than 2 days, ensure a document was uploaded
     let documentUrl: string | null = null;
     if (data.leaveType.toLowerCase() === 'sick' && (totalDays || 0) > 2) {
