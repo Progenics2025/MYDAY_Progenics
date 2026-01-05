@@ -10,7 +10,7 @@ import fs from 'fs';
 
 // Build the HTML body for leave request notifications so it can be reused
 function buildLeaveRequestEmailHtml(leaveDetails: any) {
-  if (!leaveDetails) return `Leave Request ID: ${leaveDetails?.id || ''}`;
+  if (!leaveDetails) return `<p>Leave Request ID: Unable to process</p>`;
   
   const getStatusBadgeColor = (status: string) => {
     switch((status || '').toLowerCase()) {
@@ -33,23 +33,27 @@ function buildLeaveRequestEmailHtml(leaveDetails: any) {
         </div>
 
         <!-- Main Content Box -->
-        <div style="background:#fff;border-radius:12px;padding:30px;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:20px">
+        <div style="background:#fff;border-radius:12px;padding:30px;margin-bottom:20px">
           
           <!-- Employee Info Section -->
           <div style="margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #e5e7eb">
             <h3 style="margin:0 0 16px 0;color:#0f172a;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280">Employee Information</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-              <!-- Employee Name -->
-              <div style="padding:12px;background:#f3f4f6;border-radius:8px;border-left:4px solid #3b82f6">
-                <p style="margin:0 0 4px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Employee Name</p>
-                <p style="margin:0;font-size:16px;color:#0f172a;font-weight:700">${leaveDetails?.employeeName || 'N/A'}</p>
-              </div>
-              <!-- Employee ID -->
-              <div style="padding:12px;background:#f3f4f6;border-radius:8px;border-left:4px solid #8b5cf6">
-                <p style="margin:0 0 4px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Employee ID</p>
-                <p style="margin:0;font-size:16px;color:#0f172a;font-weight:700">${leaveDetails?.employeeId || 'N/A'}</p>
-              </div>
-            </div>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:0">
+              <tr>
+                <td width="50%" style="padding-right:10px;vertical-align:top">
+                  <div style="padding:12px;background:#f3f4f6;border-radius:8px;border-left:4px solid #3b82f6">
+                    <p style="margin:0 0 4px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Employee Name</p>
+                    <p style="margin:0;font-size:16px;color:#0f172a;font-weight:700">${leaveDetails?.employeeName || 'N/A'}</p>
+                  </div>
+                </td>
+                <td width="50%" style="padding-left:10px;vertical-align:top">
+                  <div style="padding:12px;background:#f3f4f6;border-radius:8px;border-left:4px solid #8b5cf6">
+                    <p style="margin:0 0 4px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Employee ID</p>
+                    <p style="margin:0;font-size:16px;color:#0f172a;font-weight:700">${leaveDetails?.employeeId || 'N/A'}</p>
+                  </div>
+                </td>
+              </tr>
+            </table>
           </div>
 
           <!-- Status Section -->
@@ -70,31 +74,39 @@ function buildLeaveRequestEmailHtml(leaveDetails: any) {
             </div>
           </div>
 
-          <!-- Leave Details Grid -->
+          <!-- Leave Details Grid (using table for email compatibility) -->
           <div style="margin-bottom:20px">
             <h3 style="margin:0 0 16px 0;color:#0f172a;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280">Leave Details</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-              <!-- Leave Type -->
-              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
-                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Leave Type</p>
-                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600;text-transform:capitalize">${leaveDetails?.leaveType || 'N/A'}</p>
-              </div>
-              <!-- Total Days -->
-              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
-                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Total Days</p>
-                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${String(leaveDetails?.totalDays || '0')} Day(s)</p>
-              </div>
-              <!-- Start Date -->
-              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
-                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Start Date</p>
-                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${leaveDetails?.startDate ? new Date(leaveDetails.startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</p>
-              </div>
-              <!-- End Date -->
-              <div style="padding:14px;background:#f3f4f6;border-radius:8px">
-                <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">End Date</p>
-                <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${leaveDetails?.endDate ? new Date(leaveDetails.endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</p>
-              </div>
-            </div>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:0">
+              <tr>
+                <td width="50%" style="padding-right:8px;padding-bottom:16px;vertical-align:top">
+                  <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                    <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Leave Type</p>
+                    <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600;text-transform:capitalize">${leaveDetails?.leaveType || 'N/A'}</p>
+                  </div>
+                </td>
+                <td width="50%" style="padding-left:8px;padding-bottom:16px;vertical-align:top">
+                  <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                    <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Total Days</p>
+                    <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${String(leaveDetails?.totalDays || '0')} Day(s)</p>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="50%" style="padding-right:8px;vertical-align:top">
+                  <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                    <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">Start Date</p>
+                    <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${leaveDetails?.startDate ? new Date(leaveDetails.startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</p>
+                  </div>
+                </td>
+                <td width="50%" style="padding-left:8px;vertical-align:top">
+                  <div style="padding:14px;background:#f3f4f6;border-radius:8px">
+                    <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;font-weight:600">End Date</p>
+                    <p style="margin:0;font-size:15px;color:#0f172a;font-weight:600">${leaveDetails?.endDate ? new Date(leaveDetails.endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</p>
+                  </div>
+                </td>
+              </tr>
+            </table>
           </div>
         </div>
 
