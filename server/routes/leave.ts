@@ -11,18 +11,18 @@ import fs from 'fs';
 // Build the HTML body for leave request notifications so it can be reused
 function buildLeaveRequestEmailHtml(leaveDetails: any) {
   if (!leaveDetails) return `<p>Leave Request ID: Unable to process</p>`;
-  
+
   const getStatusBadgeColor = (status: string) => {
-    switch((status || '').toLowerCase()) {
+    switch ((status || '').toLowerCase()) {
       case 'approved': return '#10b981';
       case 'rejected': return '#ef4444';
       case 'pending': return '#f59e0b';
       default: return '#6b7280';
     }
   };
-  
+
   const statusColor = getStatusBadgeColor(leaveDetails?.status);
-  
+
   return `
     <div style="font-family:'Segoe UI',Arial,Helvetica,sans-serif;color:#1f2937;line-height:1.6;background:#f9fafb;padding:20px">
       <div style="max-width:700px;margin:0 auto">
@@ -204,30 +204,39 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
     try {
       const leaveBalances = await dbStorage.getLeaveBalances(employeeId);
       if (!leaveBalances) {
+        console.warn(`[LEAVE-BALANCE] Could not fetch leave balances for employee: ${employeeId}`);
         return res.status(400).json({ message: 'Unable to fetch leave balance. Please contact HR.' });
       }
 
       const leaveTypeKey = `${data.leaveType.toLowerCase()}Leave`;
-      const availableBalance = leaveBalances[leaveTypeKey as keyof typeof leaveBalances] || 0;
+      const availableBalance = leaveBalances[leaveTypeKey as keyof typeof leaveBalances];
       const requestedDays = totalDays || 0;
 
-      console.log(`[LEAVE-BALANCE] Employee: ${employeeId}, Type: ${data.leaveType}, Available: ${availableBalance}, Requested: ${requestedDays}`);
+      console.log(`[LEAVE-BALANCE] Employee: ${employeeId}, Type: ${data.leaveType}, Key: ${leaveTypeKey}, Available: ${availableBalance}, Requested: ${requestedDays}`);
+      console.log(`[LEAVE-BALANCE] Full balances: ${JSON.stringify(leaveBalances)}`);
 
-      if (availableBalance <= 0) {
-        return res.status(400).json({ 
+      // Ensure availableBalance is a number
+      const balance = availableBalance !== undefined ? Number(availableBalance) : 0;
+
+      if (balance <= 0) {
+        console.warn(`[LEAVE-BALANCE] Employee ${employeeId} has zero ${data.leaveType} leave balance`);
+        return res.status(400).json({
           message: `You do not have any ${data.leaveType.toLowerCase()} leave balance available.`,
           availableBalance: 0,
           requestedDays: requestedDays
         });
       }
 
-      if (availableBalance < requestedDays) {
-        return res.status(400).json({ 
-          message: `Insufficient ${data.leaveType.toLowerCase()} leave balance. You have ${availableBalance} days available but requested ${requestedDays} days.`,
-          availableBalance: availableBalance,
+      if (balance < requestedDays) {
+        console.warn(`[LEAVE-BALANCE] Employee ${employeeId} insufficient ${data.leaveType} balance: ${balance} < ${requestedDays}`);
+        return res.status(400).json({
+          message: `Insufficient ${data.leaveType.toLowerCase()} leave balance. You have ${balance} days available but requested ${requestedDays} days.`,
+          availableBalance: balance,
           requestedDays: requestedDays
         });
       }
+
+      console.log(`[LEAVE-BALANCE] ✅ Employee ${employeeId} has sufficient ${data.leaveType} balance (${balance} >= ${requestedDays})`);
     } catch (err) {
       console.error('Error checking leave balance:', err);
       return res.status(500).json({ message: 'Failed to validate leave balance' });
@@ -274,43 +283,72 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
       documentUrl,
     } as any);
 
+    // Add employeeName to leaveRequest for email template
+    if (employeeName) {
+      (leaveRequest as any).employeeName = employeeName;
+    }
+
 
     // Find a manager to notify (pick first employee with role containing 'Manager')
     // Notification creation + email sending is handled in a single try/catch to
     // avoid nested failure modes and ensure consistent logging.
     try {
       const allEmployees = await dbStorage.getEmployees();
-      const manager = allEmployees.find((e: any) => (e.role || '').toLowerCase().includes('manager'));
+      // Find ALL managers and HR staff to notify
+      const managers = allEmployees.filter((e: any) => {
+        const role = (e.role || '').toLowerCase();
+        return role.includes('manager') || role.includes('hr') || role.includes('admin');
+      });
+      console.log(`[LEAVE-EMAIL] Found ${managers.length} managers/HR staff to notify`);
+      const manager = managers[0]; // Use first manager for in-app notification
       if (!manager) {
         console.warn('[LEAVE-EMAIL] No manager found to notify for leave request', leaveRequest.id);
       } else {
-        const managerIdToNotify = manager.userId || manager.id;
+        // Try to create notification in DB (but don't let it block email sending)
+        try {
+          const managerIdToNotify = manager.userId || manager.id;
+          console.log(`[LEAVE-EMAIL] Attempting to create notification for manager: ${managerIdToNotify}`);
 
-        // Create notification in DB
-        const note = await dbStorage.createNotification({
-          notificationType: 'leave_request',
-          referenceId: leaveRequest.id,
-          managerId: managerIdToNotify,
-          employeeId: leaveRequest.employeeId,
-          payload: { createdAt: new Date().toISOString() }
-        });
-        if (note && note.id) leaveRequest.notificationId = note.id;
+          const note = await dbStorage.createNotification({
+            notificationType: 'leave_request',
+            referenceId: leaveRequest.id,
+            managerId: managerIdToNotify,
+            employeeId: leaveRequest.employeeId,
+            payload: { createdAt: new Date().toISOString() }
+          });
+          if (note && note.id) leaveRequest.notificationId = note.id;
+          console.log('[LEAVE-EMAIL] Notification created successfully');
+        } catch (notifyErr) {
+          // Don't let notification creation failure block email sending
+          console.error('[LEAVE-EMAIL] Failed to create notification (non-blocking):', notifyErr);
+          console.log('[LEAVE-EMAIL] Continuing with email sending...');
+        }
       }
 
       // Send email regardless of whether manager was found
       // Determine recipients from environment variable, with hardcoded defaults as fallback
       const rawRecipients = process.env.LEAVE_NOTIFICATION_EMAILS || '';
       let recipients = rawRecipients.split(',').map(s => s.trim()).filter(Boolean);
-      
+
       // Use hardcoded recipients as fallback if environment variable is not configured
       if (recipients.length === 0) {
         recipients = ['karthik.s@progencislabs.com', 'digitalsales@progenicslabs.com', 'pavithra.rk@progenicslabs.com', 'swapnil@progenicslabs.com', 'arunapriya@progenicslabs.com'];
         console.log('[LEAVE-EMAIL] Using default leave notification recipients (LEAVE_NOTIFICATION_EMAILS not configured)');
       }
-      
+
+      // Also add manager emails from the database (if they have emails and not already in list)
+      for (const mgr of managers) {
+        if (mgr.email && !recipients.includes(mgr.email)) {
+          recipients.push(mgr.email);
+          console.log(`[LEAVE-EMAIL] Added manager email from DB: ${mgr.email}`);
+        }
+      }
+
       console.log('[LEAVE-EMAIL] Leave request created:', leaveRequest.id);
+      console.log('[LEAVE-EMAIL] Employee Name:', employeeName || 'N/A');
+      console.log('[LEAVE-EMAIL] Total recipients:', recipients.length);
       console.log('[LEAVE-EMAIL] Recipients list:', recipients);
-      
+
       if (recipients.length === 0) {
         console.warn('[LEAVE-EMAIL] No leave notification recipients configured. Skipping email send.');
       } else {
@@ -360,19 +398,19 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
 
 router.get('/', async (req: AuthRequest, res) => {
   try {
-  const userId = req.user?.id;
-  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-  const page = Number(req.query.page || 1);
-  const pageSize = Number(req.query.pageSize || 10);
-  const status = typeof req.query.status === 'string' ? req.query.status : undefined;
-  const q = typeof req.query.q === 'string' ? req.query.q : undefined;
+    const page = Number(req.query.page || 1);
+    const pageSize = Number(req.query.pageSize || 10);
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    const q = typeof req.query.q === 'string' ? req.query.q : undefined;
 
-  const emp = await dbStorage.getEmployeeByUserId(userId).catch(() => null);
-  if (!emp) return res.json({ items: [], total: 0, page, pageSize });
+    const emp = await dbStorage.getEmployeeByUserId(userId).catch(() => null);
+    if (!emp) return res.json({ items: [], total: 0, page, pageSize });
 
-  const paged = await dbStorage.getLeaveRequestsPaged(emp.employeeId, page, pageSize, { status, q });
-  res.json(paged);
+    const paged = await dbStorage.getLeaveRequestsPaged(emp.employeeId, page, pageSize, { status, q });
+    res.json(paged);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch leave requests', error });
   }
@@ -383,7 +421,7 @@ router.patch('/:id/status', async (req: AuthRequest, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const userId = req.user?.id;
-    
+
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }

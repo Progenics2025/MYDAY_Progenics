@@ -13,9 +13,9 @@ interface AuthRequest extends Request {
 
 const router = Router();
 
-// Configure multer for file uploads
+// Configure multer for file uploads - use absolute path to match index.ts static serving
 const fileStorage = multer.diskStorage({
-  destination: './uploads/profiles',
+  destination: path.join(process.cwd(), 'uploads', 'profiles'),
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${path.basename(file.originalname)}`);
   }
@@ -114,7 +114,7 @@ router.post('/', upload.single('photo'), async (req: AuthRequest, res) => {
     // Normalize incoming fields to match storage API and remove undefined values
     const updatePayload: any = {
       employeeId: employee.employeeId,
-      phone: data.phoneNumber !== undefined ? data.phoneNumber : undefined,
+      phoneNumber: data.phoneNumber !== undefined ? data.phoneNumber : undefined,
       emergencyContact: data.emergencyContact !== undefined ? data.emergencyContact : undefined,
       address: data.address !== undefined ? data.address : undefined,
       dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
@@ -132,6 +132,11 @@ router.post('/', upload.single('photo'), async (req: AuthRequest, res) => {
     Object.keys(updatePayload).forEach(k => {
       if (updatePayload[k] === undefined) delete updatePayload[k];
     });
+
+    console.log('DEBUG /api/profile POST req.file:', req.file);
+    console.log('DEBUG /api/profile POST req.file.filename:', req.file?.filename);
+    console.log('DEBUG /api/profile POST profilePhotoUrl being set:', req.file ? `/uploads/profiles/${req.file.filename}` : 'NO FILE');
+    console.log('DEBUG /api/profile POST updatePayload:', JSON.stringify(updatePayload, null, 2));
 
     const profile = await dbStorage.updateEmployeeProfile(updatePayload);
 
@@ -159,7 +164,7 @@ router.get('/', async (req: AuthRequest, res) => {
       try {
         const all = await dbStorage.getEmployees();
         console.log('DEBUG /api/profile GET userId:', userId);
-        console.log('DEBUG /api/profile GET employees userIds:', all.map((e: any) => e.userId).slice(0,50));
+        console.log('DEBUG /api/profile GET employees userIds:', all.map((e: any) => e.userId).slice(0, 50));
         // try to find by loose match
         const found = all.find((e: any) => String(e.userId) === String(userId));
         console.log('DEBUG /api/profile GET foundByScan:', !!found, found && found.employeeId);
@@ -208,12 +213,13 @@ router.get('/', async (req: AuthRequest, res) => {
       joinDate: employee.joinDate || null,
       bloodGroup: (employee as any).bloodGroup || null,
       maritalStatus: (employee as any).maritalStatus || null,
-      skills: Array.isArray((employee as any).skills) ? (employee as any).skills : ((employee as any).skills ? [ (employee as any).skills ] : []),
-    photo: (employee as any).profilePhotoUrl || null,
-  panNumber: (employee as any).panNumber || null,
-  aadhaarNumber: (employee as any).aadhaarNumber || null,
-  uanNumber: (employee as any).uanNumber || null,
-  esicNumber: (employee as any).esicNumber || null,
+      skills: Array.isArray((employee as any).skills) ? (employee as any).skills : ((employee as any).skills ? [(employee as any).skills] : []),
+      // Add cache-busting query parameter to prevent browser caching of old profile photos
+      photo: (employee as any).profilePhotoUrl ? `${(employee as any).profilePhotoUrl}?t=${Date.now()}` : null,
+      panNumber: (employee as any).panNumber || null,
+      aadhaarNumber: (employee as any).aadhaarNumber || null,
+      uanNumber: (employee as any).uanNumber || null,
+      esicNumber: (employee as any).esicNumber || null,
       bankAccount: (employee as any).bankAccount || null,
       ifscCode: (employee as any).ifscCode || null,
     };

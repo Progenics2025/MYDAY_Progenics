@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -10,11 +10,17 @@ import { useAuthState } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
+interface LeaveBalances {
+  casualLeave: number;
+  sickLeave: number;
+  earnedLeave: number;
+}
+
 export default function LeaveRequestForm() {
   const { employee } = useAuthState();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
@@ -31,6 +37,38 @@ export default function LeaveRequestForm() {
     leaveType: '',
     reason: '',
   });
+
+  // Fetch leave balances
+  const { data: leaveBalances } = useQuery<LeaveBalances>({
+    queryKey: ['/api/leave-balances', employee?.employeeId],
+    queryFn: async () => {
+      if (!employee?.employeeId) return { casualLeave: 0, sickLeave: 0, earnedLeave: 0 };
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`/api/leave-balances/${employee.employeeId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch leave balances');
+      return res.json();
+    },
+    enabled: !!employee?.employeeId,
+  });
+
+  // Helper to get balance for a leave type
+  const getBalanceForType = (type: string): number => {
+    if (!leaveBalances) return 0;
+    switch (type) {
+      case 'casual': return leaveBalances.casualLeave || 0;
+      case 'sick': return leaveBalances.sickLeave || 0;
+      case 'earned': return leaveBalances.earnedLeave || 0;
+      default: return 0;
+    }
+  };
+
+  // Check if a leave type is available (balance > 0)
+  const isLeaveTypeAvailable = (type: string): boolean => {
+    return getBalanceForType(type) > 0;
+  };
+
 
   const validateForm = () => {
     const errors = {
@@ -56,6 +94,9 @@ export default function LeaveRequestForm() {
 
     if (!formData.leaveType) {
       errors.leaveType = 'Leave type is required';
+      isValid = false;
+    } else if (!isLeaveTypeAvailable(formData.leaveType)) {
+      errors.leaveType = `You have 0 ${formData.leaveType} leave balance available`;
       isValid = false;
     }
 
@@ -93,7 +134,7 @@ export default function LeaveRequestForm() {
   const leaveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const totalDays = calculateTotalDays(data.startDate, data.endDate);
-      
+
       const token = localStorage.getItem("auth_token");
       if (!token) {
         throw new Error("Not authenticated");
@@ -223,8 +264,8 @@ export default function LeaveRequestForm() {
                   type="checkbox"
                   id="halfDay"
                   checked={formData.isHalfDay}
-                  onChange={(e) => setFormData({ 
-                    ...formData, 
+                  onChange={(e) => setFormData({
+                    ...formData,
                     isHalfDay: e.target.checked,
                     halfDayDuration: e.target.checked ? '0.5' : '1.0'
                   })}
@@ -251,8 +292,8 @@ export default function LeaveRequestForm() {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-gray-500">
-                    {formData.halfDayDuration === '0.5' 
-                      ? 'Half Day: 4 hours leave' 
+                    {formData.halfDayDuration === '0.5'
+                      ? 'Half Day: 4 hours leave'
                       : 'Full Day: 8 hours leave'
                     }
                   </p>
@@ -271,11 +312,32 @@ export default function LeaveRequestForm() {
                 <SelectValue placeholder="Select leave type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="casual">Casual Leave</SelectItem>
-                <SelectItem value="sick">Sick Leave</SelectItem>
-                <SelectItem value="earned">Earned Leave</SelectItem>
+                <SelectItem
+                  value="casual"
+                  disabled={!isLeaveTypeAvailable('casual')}
+                  className={!isLeaveTypeAvailable('casual') ? 'opacity-50' : ''}
+                >
+                  Casual Leave ({getBalanceForType('casual')} days{!isLeaveTypeAvailable('casual') ? ' - Not available' : ''})
+                </SelectItem>
+                <SelectItem
+                  value="sick"
+                  disabled={!isLeaveTypeAvailable('sick')}
+                  className={!isLeaveTypeAvailable('sick') ? 'opacity-50' : ''}
+                >
+                  Sick Leave ({getBalanceForType('sick')} days{!isLeaveTypeAvailable('sick') ? ' - Not available' : ''})
+                </SelectItem>
+                <SelectItem
+                  value="earned"
+                  disabled={!isLeaveTypeAvailable('earned')}
+                  className={!isLeaveTypeAvailable('earned') ? 'opacity-50' : ''}
+                >
+                  Earned Leave ({getBalanceForType('earned')} days{!isLeaveTypeAvailable('earned') ? ' - Not available' : ''})
+                </SelectItem>
               </SelectContent>
             </Select>
+            {formErrors.leaveType && (
+              <p className="text-sm text-red-500">{formErrors.leaveType}</p>
+            )}
           </div>
 
           {/* File upload: shown only when sick leave longer than 2 days */}
@@ -306,8 +368,8 @@ export default function LeaveRequestForm() {
               <p className="text-sm text-blue-800">
                 Total leave days: <strong>{calculateTotalDays(formData.startDate, formData.endDate)}</strong>
                 {formData.isHalfDay && isSingleDay && (
-                  formData.halfDayDuration === '0.5' 
-                    ? ' (Half Day - 4 hours)' 
+                  formData.halfDayDuration === '0.5'
+                    ? ' (Half Day - 4 hours)'
                     : ' (Full Day - 8 hours)'
                 )}
               </p>

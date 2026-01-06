@@ -571,15 +571,22 @@ export class PostgresStorage {
     if (!row) return undefined;
 
     // Drizzle/pg may return decimals as strings; coerce to numbers and provide defaults
-    const casual = (row as any).casualLeave !== undefined && (row as any).casualLeave !== null
-      ? Number((row as any).casualLeave)
-      : 12;
-    const sick = (row as any).sickLeave !== undefined && (row as any).sickLeave !== null
-      ? Number((row as any).sickLeave)
-      : 12;
-    const earned = (row as any).earnedLeave !== undefined && (row as any).earnedLeave !== null
-      ? Number((row as any).earnedLeave)
-      : 15;
+    // Check both camelCase and snake_case formats for compatibility
+    const casual = ((row as any).casual_leave !== undefined && (row as any).casual_leave !== null)
+      ? Number((row as any).casual_leave)
+      : ((row as any).casualLeave !== undefined && (row as any).casualLeave !== null)
+        ? Number((row as any).casualLeave)
+        : 12;
+    const sick = ((row as any).sick_leave !== undefined && (row as any).sick_leave !== null)
+      ? Number((row as any).sick_leave)
+      : ((row as any).sickLeave !== undefined && (row as any).sickLeave !== null)
+        ? Number((row as any).sickLeave)
+        : 12;
+    const earned = ((row as any).earned_leave !== undefined && (row as any).earned_leave !== null)
+      ? Number((row as any).earned_leave)
+      : ((row as any).earnedLeave !== undefined && (row as any).earnedLeave !== null)
+        ? Number((row as any).earnedLeave)
+        : 15;
 
     return {
       casualLeave: casual,
@@ -1162,7 +1169,9 @@ export class PostgresStorage {
     if (profile.maritalStatus !== undefined) setObj.maritalStatus = profile.maritalStatus;
     if (profile.gender !== undefined) setObj.gender = profile.gender;
     if (skillsVal !== null) setObj.skills = skillsVal;
-    if (profile.photo !== undefined) setObj.profilePhotoUrl = profile.photo;
+    // Check profilePhotoUrl (sent by profile route) or photo (sent elsewhere) - only update if explicitly provided
+    if (profile.profilePhotoUrl !== undefined) setObj.profilePhotoUrl = profile.profilePhotoUrl;
+    else if (profile.photo !== undefined) setObj.profilePhotoUrl = profile.photo;
     if (profile.department !== undefined) setObj.department = profile.department;
     if (profile.role !== undefined) setObj.role = profile.role;
     // joinDate: support undefined (no change), null (clear), or value -> Date
@@ -1173,6 +1182,9 @@ export class PostgresStorage {
     }
     if (profile.uanNumber !== undefined) setObj.uanNumber = profile.uanNumber;
     if (profile.esicNumber !== undefined) setObj.esicNumber = profile.esicNumber;
+
+    console.log('DEBUG updateEmployeeProfile input profile:', JSON.stringify(profile, null, 2));
+    console.log('DEBUG updateEmployeeProfile setObj:', JSON.stringify(setObj, null, 2));
 
     // Perform update
     await this.db
@@ -1186,7 +1198,9 @@ export class PostgresStorage {
       .from(employees)
       .where(eq(employees.employeeId, profile.employeeId));
 
+    console.log('DEBUG updateEmployeeProfile: query result after update, row count:', row.length);
     const emp = row[0];
+    console.log('DEBUG updateEmployeeProfile: returned employee profilePhotoUrl:', emp?.profilePhotoUrl);
     if (!emp) return null;
 
     return {

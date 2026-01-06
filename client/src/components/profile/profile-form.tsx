@@ -127,7 +127,7 @@ export default function ProfileForm() {
           dateOfBirth: transformed.dateOfBirth ? new Date(transformed.dateOfBirth).toISOString().split('T')[0] : '',
           joinDate: transformed.joinDate ? new Date(transformed.joinDate).toISOString().split('T')[0] : '',
         } as ProfileData;
-        setFormData(prev => ({ ...prev, ...normalized, photo: normalized.photo || null }));
+        setFormData((prev: ProfileData) => ({ ...prev, ...normalized, photo: normalized.photo || null }));
       } catch (err: any) {
         console.error('Failed to load profile', err);
         setError(err?.message || 'Failed to load profile');
@@ -152,7 +152,9 @@ export default function ProfileForm() {
 
       // When a photo file is present, send multipart/form-data so multer parses req.file
       let response: Response;
+      console.log('DEBUG profile-form: formData.photo type:', formData.photo instanceof File ? 'File' : typeof formData.photo, formData.photo);
       if ((formData.photo as any) instanceof File) {
+        console.log('DEBUG profile-form: Uploading new photo file:', (formData.photo as File).name, (formData.photo as File).size);
         const fd = new FormData();
         fd.append('photo', formData.photo as File);
         // append other fields as strings so multer will populate req.body
@@ -231,8 +233,12 @@ export default function ProfileForm() {
         const res2 = await fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } });
         if (res2.ok) {
           const reloaded = await res2.json();
+          console.log('DEBUG profile-form: Reloaded profile after save:', reloaded);
           const profile = reloaded.profile || reloaded.data || reloaded;
-          setFormData(prev => ({ ...prev, ...transformApiData(profile || {}), photo: null }));
+          console.log('DEBUG profile-form: Photo URL from server:', profile?.photo || profile?.profilePhotoUrl);
+          const transformedProfile = transformApiData(profile || {});
+          // Preserve the photo URL from server response (don't clear it)
+          setFormData((prev: ProfileData) => ({ ...prev, ...transformedProfile }));
         }
       } catch (e) {
         console.error('Failed to refresh auth/profile after save', e);
