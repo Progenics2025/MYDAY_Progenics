@@ -1120,13 +1120,41 @@ export class PostgresStorage {
 
   // GPS Location operations
   async createGPSLocation(location: { attendanceId: string; latitude: number; longitude: number; accuracy: number | null; timestamp: Date }): Promise<any> {
-    // Mock implementation for now
-    return { id: randomUUID(), ...location };
+    const id = randomUUID();
+    const sql = `
+      INSERT INTO gps_locations (id, attendance_id, latitude, longitude, accuracy, timestamp, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      RETURNING *
+    `;
+    const values = [id, location.attendanceId, location.latitude, location.longitude, location.accuracy, location.timestamp];
+    const result = await this.pool.query(sql, values);
+    return result.rows[0];
   }
 
   async getGPSLocations(attendanceId: string): Promise<any[]> {
-    // Mock implementation for now
-    return [];
+    const sql = `SELECT * FROM gps_locations WHERE attendance_id = $1 ORDER BY timestamp ASC`;
+    const result = await this.pool.query(sql, [attendanceId]);
+    return result.rows;
+  }
+
+  // Get GPS locations for multiple attendance IDs (for reports)
+  async getGPSLocationsForAttendances(attendanceIds: string[]): Promise<Map<string, any[]>> {
+    if (attendanceIds.length === 0) return new Map();
+    
+    const placeholders = attendanceIds.map((_, i) => `$${i + 1}`).join(',');
+    const sql = `SELECT * FROM gps_locations WHERE attendance_id IN (${placeholders}) ORDER BY timestamp ASC`;
+    const result = await this.pool.query(sql, attendanceIds);
+    
+    // Group by attendance_id
+    const locationMap = new Map<string, any[]>();
+    for (const row of result.rows) {
+      const attId = row.attendance_id;
+      if (!locationMap.has(attId)) {
+        locationMap.set(attId, []);
+      }
+      locationMap.get(attId)!.push(row);
+    }
+    return locationMap;
   }
 
   // Profile operations

@@ -34,7 +34,24 @@ router.get('/attendance', async (req: AuthenticatedRequest, res) => {
     // Get department statistics in parallel
     const deptStats = await storage.getDepartmentStats(start, end);
 
-    // Filter and enrich attendance data
+    // Get GPS locations for all attendance records
+    const attendanceIds = attendanceRecords.map(r => r.id);
+    let gpsLocationsMap = new Map<string, any[]>();
+
+    // Use batch method if available, otherwise fetch individually
+    if (typeof (storage as any).getGPSLocationsForAttendances === 'function') {
+      gpsLocationsMap = await (storage as any).getGPSLocationsForAttendances(attendanceIds);
+    } else {
+      // Fallback: fetch GPS locations individually
+      for (const record of attendanceRecords) {
+        const locations = await storage.getGPSLocations(record.id);
+        if (locations.length > 0) {
+          gpsLocationsMap.set(record.id, locations);
+        }
+      }
+    }
+
+    // Filter and enrich attendance data with GPS locations
     const enrichedRecords = attendanceRecords
       .map(record => {
         const employee = employees.find(emp => emp.employeeId === record.employeeId);
@@ -45,7 +62,26 @@ router.get('/attendance', async (req: AuthenticatedRequest, res) => {
           return null;
         }
 
+        // Get GPS locations for this attendance record
+        const gpsLocations = gpsLocationsMap.get(record.id) || [];
+
+        // First location is typically punch-in, last is punch-out
+        const punchInLocation = gpsLocations.length > 0 ? {
+          latitude: parseFloat(gpsLocations[0].latitude),
+          longitude: parseFloat(gpsLocations[0].longitude),
+          accuracy: gpsLocations[0].accuracy ? parseFloat(gpsLocations[0].accuracy) : null,
+          timestamp: gpsLocations[0].timestamp
+        } : null;
+
+        const punchOutLocation = gpsLocations.length > 1 ? {
+          latitude: parseFloat(gpsLocations[gpsLocations.length - 1].latitude),
+          longitude: parseFloat(gpsLocations[gpsLocations.length - 1].longitude),
+          accuracy: gpsLocations[gpsLocations.length - 1].accuracy ? parseFloat(gpsLocations[gpsLocations.length - 1].accuracy) : null,
+          timestamp: gpsLocations[gpsLocations.length - 1].timestamp
+        } : null;
+
         return {
+          id: record.id,
           date: record.date.toISOString().split('T')[0],
           employeeId: record.employeeId,
           employeeName: `${employee.firstName} ${employee.lastName}`,
@@ -53,7 +89,9 @@ router.get('/attendance', async (req: AuthenticatedRequest, res) => {
           status: record.status,
           punchIn: record.punchIn,
           punchOut: record.punchOut,
-          totalHours: record.totalHours || null
+          totalHours: record.totalHours || null,
+          punchInLocation,
+          punchOutLocation
         };
       })
       .filter((record): record is NonNullable<typeof record> => record !== null);
