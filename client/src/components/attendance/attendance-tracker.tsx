@@ -26,7 +26,7 @@ export default function AttendanceTracker() {
     queryKey: ["/api/attendance", employee?.employeeId, monthFilter],
     queryFn: async () => {
       const response = await apiRequest(
-        "GET", 
+        "GET",
         `/api/attendance?employeeId=${employee?.employeeId}&month=${monthFilter}`
       );
       if (!response.ok) {
@@ -100,12 +100,12 @@ export default function AttendanceTracker() {
     if (!Array.isArray(attendanceHistory) || attendanceHistory.length === 0) return "0h 0m";
 
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
     let totalMs = 0;
     attendanceHistory.forEach((rec: Attendance) => {
       const recDate = new Date(rec.date);
-      recDate.setHours(0,0,0,0);
+      recDate.setHours(0, 0, 0, 0);
       if (recDate.getTime() === today.getTime()) {
         if (rec.punchIn && rec.punchOut) {
           const inT = new Date(rec.punchIn).getTime();
@@ -125,19 +125,19 @@ export default function AttendanceTracker() {
   // Build today's attendance records from attendanceHistory
   const todaysRecords = Array.isArray(attendanceHistory)
     ? attendanceHistory
-        .filter((rec: Attendance) => {
-          const recDate = new Date(rec.date);
-          const today = new Date();
-          recDate.setHours(0,0,0,0);
-          today.setHours(0,0,0,0);
-          return recDate.getTime() === today.getTime();
-        })
-        .sort((a: Attendance, b: Attendance) => {
-          // sort by createdAt or punchIn (safely handle nulls)
-          const aTime = (a.punchIn ? new Date(a.punchIn).getTime() : (a.createdAt ? new Date((a as any).createdAt).getTime() : Date.now()));
-          const bTime = (b.punchIn ? new Date(b.punchIn).getTime() : (b.createdAt ? new Date((b as any).createdAt).getTime() : Date.now()));
-          return aTime - bTime;
-        })
+      .filter((rec: Attendance) => {
+        const recDate = new Date(rec.date);
+        const today = new Date();
+        recDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        return recDate.getTime() === today.getTime();
+      })
+      .sort((a: Attendance, b: Attendance) => {
+        // sort by createdAt or punchIn (safely handle nulls)
+        const aTime = (a.punchIn ? new Date(a.punchIn).getTime() : (a.createdAt ? new Date((a as any).createdAt).getTime() : Date.now()));
+        const bTime = (b.punchIn ? new Date(b.punchIn).getTime() : (b.createdAt ? new Date((b as any).createdAt).getTime() : Date.now()));
+        return aTime - bTime;
+      })
     : [];
 
   const earliestPunchIn = todaysRecords.length ? todaysRecords[0].punchIn : (todayAttendance?.punchIn || null);
@@ -293,6 +293,9 @@ export default function AttendanceTracker() {
                   Hours
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Location
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Status
                 </th>
               </tr>
@@ -300,13 +303,13 @@ export default function AttendanceTracker() {
             <tbody className="bg-card divide-y divide-border">
               {!Array.isArray(attendanceHistory) ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
                     Error loading attendance records
                   </td>
                 </tr>
               ) : attendanceHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
                     No attendance records found
                   </td>
                 </tr>
@@ -324,6 +327,9 @@ export default function AttendanceTracker() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {record.totalHours ? `${parseFloat(record.totalHours).toFixed(1)}h` : '--'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate" title={(record as any).punchInAddress || ''}>
+                      {(record as any).punchInAddress || '--'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(record.status || 'unknown')}

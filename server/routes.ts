@@ -56,6 +56,7 @@ import documentsRoutes from './routes/documents';
 import profileRoutes from './routes/profile';
 import notifyRoutes from './routes/notify';
 import holidaysRoutes from './routes/holidays';
+import locationTrackerRoutes from './routes/location-tracker';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register expense routes
@@ -79,6 +80,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Holidays routes
   app.use('/api/holidays', authenticateToken, holidaysRoutes);
+
+  // Location tracking routes (field sales tracking)
+  app.use('/api/location', authenticateToken, locationTrackerRoutes);
 
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
@@ -705,7 +709,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const targetDate = date ? new Date(date as string) : undefined;
 
       const attendance = await dbStorage.getAttendance(targetEmployeeId, targetDate ? 'current' : undefined);
-      res.json(attendance);
+
+      // Enrich attendance records with GPS location addresses
+      const enrichedAttendance = await Promise.all(attendance.map(async (record: any) => {
+        try {
+          const gpsLocations = await dbStorage.getGPSLocations(record.id);
+          if (gpsLocations && gpsLocations.length > 0) {
+            const punchInLocation = gpsLocations[0];
+            const punchOutLocation = gpsLocations.length > 1 ? gpsLocations[gpsLocations.length - 1] : null;
+            return {
+              ...record,
+              punchInAddress: punchInLocation?.address || null,
+              punchOutAddress: punchOutLocation?.address || null,
+            };
+          }
+        } catch (err) {
+          // silently fail and return record without addresses
+        }
+        return record;
+      }));
+
+      res.json(enrichedAttendance);
     } catch (error) {
       res.status(500).json([]);
     }
@@ -726,6 +750,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!employee) {
         return res.status(404).json({ message: "Employee profile not found" });
       }
+
+      const { latitude, longitude, accuracy } = req.body;
 
       const today = new Date();
       // Allow multiple punch-in/out per day: fetch latest record and only prevent punch-in
@@ -748,8 +774,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...attendanceData,
         id: randomUUID(),
       });
+
+      // Save GPS location if coordinates provided
+      if (latitude && longitude) {
+        let address: string | null = null;
+        try {
+          // Fetch address using reverse geocoding
+          const geoResponse = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+            { headers: { 'User-Agent': 'MyDay-HRMS/1.0' } }
+          );
+          if (geoResponse.ok) {
+            const geoData = await geoResponse.json();
+            const addr = geoData.address;
+            if (addr) {
+              const parts = [];
+              if (addr.building) parts.push(addr.building);
+              if (addr.road) parts.push(addr.road);
+              if (addr.suburb) parts.push(addr.suburb);
+              if (addr.city || addr.town || addr.village) parts.push(addr.city || addr.town || addr.village);
+              address = parts.length > 0 ? parts.join(', ') : geoData.display_name || null;
+            } else {
+              address = geoData.display_name || null;
+            }
+          }
+        } catch (geoErr) {
+          console.error('Geocoding failed:', geoErr);
+        }
+
+        await dbStorage.createGPSLocation({
+          attendanceId: attendance.id,
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+          accuracy: accuracy ? parseFloat(accuracy) : null,
+          address,
+          timestamp: today,
+        });
+      }
+
       res.status(201).json(attendance);
     } catch (error) {
+      console.error('Punch in error:', error);
       res.status(500).json({ message: "Failed to punch in" });
     }
   });
@@ -760,6 +825,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!employee) {
         return res.status(404).json({ message: "Employee profile not found" });
       }
+
+      const { latitude, longitude, accuracy } = req.body;
 
       // For punch-out, find the latest open attendance for today and close it
       const existingAttendance = await dbStorage.getTodayAttendance(employee.employeeId);
@@ -779,8 +846,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalHours
       });
 
+      // Save GPS location if coordinates provided
+      if (latitude && longitude) {
+        let address: string | null = null;
+        try {
+          // Fetch address using reverse geocoding
+          const geoResponse = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+            { headers: { 'User-Agent': 'MyDay-HRMS/1.0' } }
+          );
+          if (geoResponse.ok) {
+            const geoData = await geoResponse.json();
+            const addr = geoData.address;
+            if (addr) {
+              const parts = [];
+              if (addr.building) parts.push(addr.building);
+              if (addr.road) parts.push(addr.road);
+              if (addr.suburb) parts.push(addr.suburb);
+              if (addr.city || addr.town || addr.village) parts.push(addr.city || addr.town || addr.village);
+              address = parts.length > 0 ? parts.join(', ') : geoData.display_name || null;
+            } else {
+              address = geoData.display_name || null;
+            }
+          }
+        } catch (geoErr) {
+          console.error('Geocoding failed:', geoErr);
+        }
+
+        await dbStorage.createGPSLocation({
+          attendanceId: existingAttendance.id,
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+          accuracy: accuracy ? parseFloat(accuracy) : null,
+          address,
+          timestamp: punchOut,
+        });
+      }
+
       res.json(attendance);
     } catch (error) {
+      console.error('Punch out error:', error);
       res.status(500).json({ message: "Failed to punch out" });
     }
   });

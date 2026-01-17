@@ -21,6 +21,7 @@ export default function Sidebar({ activeSection, onSectionChange, isOpen, onClos
     { id: "dashboard", label: "Dashboard", icon: BarChart3, roles: ["admin", "manager", "employee"] },
     { id: "employees", label: "Team", icon: Users, roles: ["admin", "hr"] },
     { id: "attendance", label: "Attendance", icon: Clock, roles: ["admin", "manager", "employee"] },
+    { id: "field-tracking", label: "Field Tracking", icon: MapPin, roles: ["admin", "manager"] },
     { id: "payroll", label: "Payroll", icon: DollarSign, roles: ["admin", "hr"] },
     { id: "expenses", label: "Expenses", icon: ReceiptIcon, roles: ["admin", "manager", "employee"] },
     { id: "leave", label: "Leave", icon: Calendar, roles: ["admin", "manager", "employee"] },

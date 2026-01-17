@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { storage as dbStorage } from '../storage';
+import { storage as dbStorage } from '../db-storage';
 import multer from 'multer';
 import path from 'path';
 import type { Request } from 'express';
@@ -49,6 +49,12 @@ const profileSchema = z.object({
 });
 
 router.post('/', upload.single('photo'), async (req: AuthRequest, res) => {
+  console.log('=== /api/profile POST START ===');
+  console.log('DEBUG /api/profile POST content-type:', req.headers['content-type']);
+  console.log('DEBUG /api/profile POST req.file present:', !!req.file);
+  if (req.file) {
+    console.log('DEBUG /api/profile POST req.file details:', { filename: req.file.filename, originalname: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype });
+  }
   try {
     console.log('DEBUG /api/profile POST headers:', req.headers.authorization);
     console.log('DEBUG /api/profile POST user:', req.user);
@@ -64,7 +70,20 @@ router.post('/', upload.single('photo'), async (req: AuthRequest, res) => {
       try { raw.experience = JSON.parse(raw.experience); } catch (e) { raw.experience = [raw.experience]; }
     }
 
-    const data = profileSchema.parse(raw);
+    console.log('DEBUG /api/profile POST raw body before parsing:', JSON.stringify(raw, null, 2));
+
+    // Use safeParse to capture validation errors
+    const parseResult = profileSchema.safeParse(raw);
+    if (!parseResult.success) {
+      console.error('ERROR /api/profile POST schema validation failed:', parseResult.error.errors);
+      return res.status(400).json({
+        message: 'Profile validation failed',
+        errors: parseResult.error.errors
+      });
+    }
+    const data = parseResult.data;
+    console.log('DEBUG /api/profile POST parsed data:', JSON.stringify(data, null, 2));
+
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
@@ -142,7 +161,8 @@ router.post('/', upload.single('photo'), async (req: AuthRequest, res) => {
 
     res.json({ message: 'Profile updated successfully', data: profile });
   } catch (error) {
-    res.status(400).json({ message: 'Failed to update profile', error });
+    console.error('ERROR /api/profile POST:', error);
+    res.status(400).json({ message: 'Failed to update profile', error: (error as Error).message || error });
   }
 });
 

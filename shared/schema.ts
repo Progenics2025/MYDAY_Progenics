@@ -59,6 +59,7 @@ export const gpsLocations = pgTable("gps_locations", {
   latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
   longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
   accuracy: decimal("accuracy", { precision: 10, scale: 2 }),
+  address: text("address"),
   timestamp: timestamp("timestamp").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

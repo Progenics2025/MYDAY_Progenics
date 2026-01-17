@@ -70,6 +70,7 @@ router.get('/attendance', async (req: AuthenticatedRequest, res) => {
           latitude: parseFloat(gpsLocations[0].latitude),
           longitude: parseFloat(gpsLocations[0].longitude),
           accuracy: gpsLocations[0].accuracy ? parseFloat(gpsLocations[0].accuracy) : null,
+          address: gpsLocations[0].address || null,
           timestamp: gpsLocations[0].timestamp
         } : null;
 
@@ -77,6 +78,7 @@ router.get('/attendance', async (req: AuthenticatedRequest, res) => {
           latitude: parseFloat(gpsLocations[gpsLocations.length - 1].latitude),
           longitude: parseFloat(gpsLocations[gpsLocations.length - 1].longitude),
           accuracy: gpsLocations[gpsLocations.length - 1].accuracy ? parseFloat(gpsLocations[gpsLocations.length - 1].accuracy) : null,
+          address: gpsLocations[gpsLocations.length - 1].address || null,
           timestamp: gpsLocations[gpsLocations.length - 1].timestamp
         } : null;
 

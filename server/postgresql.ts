@@ -1119,14 +1119,14 @@ export class PostgresStorage {
 
 
   // GPS Location operations
-  async createGPSLocation(location: { attendanceId: string; latitude: number; longitude: number; accuracy: number | null; timestamp: Date }): Promise<any> {
+  async createGPSLocation(location: { attendanceId: string; latitude: number; longitude: number; accuracy: number | null; address?: string | null; timestamp: Date }): Promise<any> {
     const id = randomUUID();
     const sql = `
-      INSERT INTO gps_locations (id, attendance_id, latitude, longitude, accuracy, timestamp, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      INSERT INTO gps_locations (id, attendance_id, latitude, longitude, accuracy, address, timestamp, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
       RETURNING *
     `;
-    const values = [id, location.attendanceId, location.latitude, location.longitude, location.accuracy, location.timestamp];
+    const values = [id, location.attendanceId, location.latitude, location.longitude, location.accuracy, location.address || null, location.timestamp];
     const result = await this.pool.query(sql, values);
     return result.rows[0];
   }
@@ -1140,11 +1140,11 @@ export class PostgresStorage {
   // Get GPS locations for multiple attendance IDs (for reports)
   async getGPSLocationsForAttendances(attendanceIds: string[]): Promise<Map<string, any[]>> {
     if (attendanceIds.length === 0) return new Map();
-    
+
     const placeholders = attendanceIds.map((_, i) => `$${i + 1}`).join(',');
     const sql = `SELECT * FROM gps_locations WHERE attendance_id IN (${placeholders}) ORDER BY timestamp ASC`;
     const result = await this.pool.query(sql, attendanceIds);
-    
+
     // Group by attendance_id
     const locationMap = new Map<string, any[]>();
     for (const row of result.rows) {
@@ -1271,5 +1271,159 @@ export class PostgresStorage {
       photo: emp.profilePhotoUrl || null,
       updatedAt: emp.updatedAt || new Date(),
     };
+  }
+
+  // ========================================
+  // Location Trail Operations (Field Tracking)
+  // ========================================
+
+  async createLocationTrail(data: {
+    id: string;
+    employeeId: string;
+    attendanceId: string | null;
+    latitude: number;
+    longitude: number;
+    accuracy: number | null;
+    altitude: number | null;
+    speed: number | null;
+    heading: number | null;
+    batteryLevel: number | null;
+    timestamp: Date;
+  }): Promise<any> {
+    const sql = `
+      INSERT INTO location_trails 
+        (id, employee_id, attendance_id, latitude, longitude, accuracy, altitude, speed, heading, battery_level, timestamp, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+      RETURNING *
+    `;
+    const values = [
+      data.id,
+      data.employeeId,
+      data.attendanceId,
+      data.latitude,
+      data.longitude,
+      data.accuracy,
+      data.altitude,
+      data.speed,
+      data.heading,
+      data.batteryLevel,
+      data.timestamp
+    ];
+    const result = await this.pool.query(sql, values);
+    return result.rows[0];
+  }
+
+  async getLocationTrail(employeeId: string, startDate: Date, endDate: Date): Promise<any[]> {
+    const sql = `
+      SELECT * FROM location_trails 
+      WHERE employee_id = $1 
+        AND timestamp >= $2 
+        AND timestamp <= $3 
+      ORDER BY timestamp ASC
+    `;
+    const result = await this.pool.query(sql, [employeeId, startDate, endDate]);
+    return result.rows;
+  }
+
+  // ========================================
+  // Visit Operations (Client Visits/Stops)
+  // ========================================
+
+  async createVisit(data: {
+    id: string;
+    employeeId: string;
+    attendanceId: string | null;
+    latitude: number;
+    longitude: number;
+    address: string | null;
+    placeName: string | null;
+    arrivalTime: Date;
+    departureTime: Date | null;
+    durationMinutes: number | null;
+    visitType: string;
+    notes: string | null;
+  }): Promise<any> {
+    const sql = `
+      INSERT INTO visits 
+        (id, employee_id, attendance_id, latitude, longitude, address, place_name, arrival_time, departure_time, duration_minutes, visit_type, notes, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+      RETURNING *
+    `;
+    const values = [
+      data.id,
+      data.employeeId,
+      data.attendanceId,
+      data.latitude,
+      data.longitude,
+      data.address,
+      data.placeName,
+      data.arrivalTime,
+      data.departureTime,
+      data.durationMinutes,
+      data.visitType,
+      data.notes
+    ];
+    const result = await this.pool.query(sql, values);
+    return result.rows[0];
+  }
+
+  async updateVisit(id: string, data: Partial<{
+    departureTime: Date;
+    durationMinutes: number;
+    address: string;
+    placeName: string;
+    visitType: string;
+    notes: string;
+    updatedAt: Date;
+  }>): Promise<any> {
+    const sets: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.departureTime !== undefined) {
+      sets.push(`departure_time = $${idx++}`);
+      values.push(data.departureTime);
+    }
+    if (data.durationMinutes !== undefined) {
+      sets.push(`duration_minutes = $${idx++}`);
+      values.push(data.durationMinutes);
+    }
+    if (data.address !== undefined) {
+      sets.push(`address = $${idx++}`);
+      values.push(data.address);
+    }
+    if (data.placeName !== undefined) {
+      sets.push(`place_name = $${idx++}`);
+      values.push(data.placeName);
+    }
+    if (data.visitType !== undefined) {
+      sets.push(`visit_type = $${idx++}`);
+      values.push(data.visitType);
+    }
+    if (data.notes !== undefined) {
+      sets.push(`notes = $${idx++}`);
+      values.push(data.notes);
+    }
+
+    sets.push(`updated_at = $${idx++}`);
+    values.push(new Date());
+
+    values.push(id);
+
+    const sql = `UPDATE visits SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`;
+    const result = await this.pool.query(sql, values);
+    return result.rows[0];
+  }
+
+  async getVisits(employeeId: string, startDate: Date, endDate: Date): Promise<any[]> {
+    const sql = `
+      SELECT * FROM visits 
+      WHERE employee_id = $1 
+        AND arrival_time >= $2 
+        AND arrival_time <= $3 
+      ORDER BY arrival_time ASC
+    `;
+    const result = await this.pool.query(sql, [employeeId, startDate, endDate]);
+    return result.rows;
   }
 }

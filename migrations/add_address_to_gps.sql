@@ -1,0 +1,1 @@
+ALTER TABLE gps_locations ADD COLUMN IF NOT EXISTS address TEXT;

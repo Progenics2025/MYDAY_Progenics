@@ -18,8 +18,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, CheckCircle, CalendarX, DollarSign, TrendingUp, BarChart3, Clock, MapPin, Receipt, Calendar, FileText, UserCircle } from "lucide-react";
 import { useAuthState } from "@/lib/auth";
+import FieldTrackingDashboard from "@/components/field-tracking/FieldTrackingDashboard";
 
-type ActiveSection = "dashboard" | "employees" | "attendance" | "payroll" | "expenses" | "documents" | "profile" | "reports" | "leave" | "holiday";
+type ActiveSection = "dashboard" | "employees" | "attendance" | "payroll" | "expenses" | "documents" | "profile" | "reports" | "leave" | "holiday" | "field-tracking";
 
 export default function Dashboard() {
   const { user } = useAuthState();
@@ -37,9 +38,9 @@ export default function Dashboard() {
       leave: ["admin", "manager", "employee"],
       documents: ["admin", "manager", "employee"],
       profile: ["manager", "employee"],
-      reports: ["admin", "manager"]
-      ,
-      holiday: ["admin", "manager", "employee"]
+      reports: ["admin", "manager"],
+      holiday: ["admin", "manager", "employee"],
+      "field-tracking": ["admin", "manager"]
     };
 
     return Object.keys(allSections).filter(section =>
@@ -111,6 +112,8 @@ export default function Dashboard() {
         return <ReportsDashboard />;
       case "holiday":
         return <HolidayCalendar role={(user?.role || 'employee') as any} />;
+      case "field-tracking":
+        return <FieldTrackingDashboard />;
       default:
         return <DashboardOverview stats={stats} setActiveSection={setActiveSection} user={user} />;
     }
@@ -127,7 +130,8 @@ export default function Dashboard() {
       documents: "Documents",
       profile: "Profile",
       reports: "Reports",
-      holiday: "Company Holidays"
+      holiday: "Company Holidays",
+      "field-tracking": "Field Tracking"
     };
     return titles[section] || "Dashboard";
   };
