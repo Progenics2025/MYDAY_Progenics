@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }: any) {
                     await SecureStore.setItemAsync('employee_name', data.employee.firstName + ' ' + data.employee.lastName);
                 }
 
-                navigation.replace('Main');
+                navigation.replace('Dashboard');
             } else {
                 const errorData = await response.json();
                 Alert.alert('Login Failed', errorData.message || 'Invalid credentials');

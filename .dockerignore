@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+client/node_modules
+mobile/node_modules
+
+# Git
+.git
+.gitignore
+
+# Development
+.env.local
+.env.development
+*.log
+npm-debug.log*
+
+# Mobile app (not needed in web container)
+mobile
+
+# Build artifacts (will be created during build)
+dist
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Test files
+*.test.*
+*.spec.*
+__tests__
+coverage
+
+# Documentation
+*.md
+!README.md
+
+# Scripts (not needed in production)
+scripts
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (no need to copy themselves)
+Dockerfile
+docker-compose*.yml
+.dockerignore

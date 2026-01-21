@@ -293,7 +293,10 @@ export default function AttendanceTracker() {
                   Hours
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Location
+                  Punch In Location
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Punch Out Location
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Status
@@ -303,13 +306,13 @@ export default function AttendanceTracker() {
             <tbody className="bg-card divide-y divide-border">
               {!Array.isArray(attendanceHistory) ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-6 py-4 text-center text-muted-foreground">
                     Error loading attendance records
                   </td>
                 </tr>
               ) : attendanceHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-6 py-4 text-center text-muted-foreground">
                     No attendance records found
                   </td>
                 </tr>
@@ -328,8 +331,11 @@ export default function AttendanceTracker() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {record.totalHours ? `${parseFloat(record.totalHours).toFixed(1)}h` : '--'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate" title={(record as any).punchInAddress || ''}>
+                    <td className="px-6 py-4 text-sm text-foreground max-w-[180px] truncate" title={(record as any).punchInAddress || ''}>
                       {(record as any).punchInAddress || '--'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-foreground max-w-[180px] truncate" title={(record as any).punchOutAddress || ''}>
+                      {(record as any).punchOutAddress || '--'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(record.status || 'unknown')}

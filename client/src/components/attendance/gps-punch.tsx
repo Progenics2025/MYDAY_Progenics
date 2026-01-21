@@ -58,20 +58,41 @@ export default function GPSPunch() {
     getCurrentLocation();
   }, []);
 
-  const handlePunch = async (type: 'in' | 'out') => {
-    if (!location) {
-      setError('Please enable location access');
-      getCurrentLocation();
-      return;
-    }
 
+  const handlePunch = async (type: 'in' | 'out') => {
     try {
       setLoading(true);
+      setError(null);
+
+      // Get fresh GPS location before punch
+      let currentLocation: GeolocationPosition | null = null;
+
+      try {
+        currentLocation = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => resolve(position),
+            (error) => reject(error),
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+          );
+        });
+        setLocation(currentLocation);
+      } catch (geoError) {
+        // Fall back to cached location if fresh location fails
+        if (location) {
+          currentLocation = location;
+          console.warn('Using cached location due to GPS error:', geoError);
+        } else {
+          setError('Unable to get your location. Please enable location access and try again.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const endpoint = type === 'in' ? '/api/attendance/punch-in' : '/api/attendance/punch-out';
       const response = await apiRequest('POST', endpoint, {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        accuracy: location.coords.accuracy,
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        accuracy: currentLocation.coords.accuracy,
         employeeId: employee?.employeeId
       });
 
@@ -88,7 +109,6 @@ export default function GPSPunch() {
 
       queryClient.invalidateQueries({ queryKey: [`/api/attendance/today/${employee?.employeeId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/attendance"] });
-      setError(null);
     } catch (err: any) {
       setError(err.message || 'Failed to record attendance');
       toast({

@@ -16,7 +16,7 @@ import HolidayCalendar from "@/components/holiday/holiday-calendar";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, CheckCircle, CalendarX, DollarSign, TrendingUp, BarChart3, Clock, MapPin, Receipt, Calendar, FileText, UserCircle } from "lucide-react";
+import { Users, CheckCircle, CalendarX, DollarSign, TrendingUp, BarChart3, Clock, MapPin, Receipt, Calendar, FileText, UserCircle, Navigation } from "lucide-react";
 import { useAuthState } from "@/lib/auth";
 import FieldTrackingDashboard from "@/components/field-tracking/FieldTrackingDashboard";
 
@@ -338,6 +338,27 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
             </CardContent>
           </Card>
 
+          {/* Field Tracking Section - Admin/Manager Only */}
+          {isAdminOrManager && (
+            <Card className="border-none shadow-xl bg-white dark:bg-slate-800">
+              <div className="p-3 sm:p-4 md:p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center">
+                  <MapPin className="w-5 h-5 mr-2 text-indigo-500" />
+                  Field Tracking
+                </h3>
+                <button
+                  onClick={() => setActiveSection('field-tracking')}
+                  className="text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  View Full Dashboard →
+                </button>
+              </div>
+              <CardContent className="p-3 sm:p-4 md:p-6">
+                <FieldTrackingSummary />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Calendar View (Replaces Upcoming Holidays) */}
           <CalendarView />
 
@@ -427,4 +448,93 @@ function DashboardOverview({ stats, setActiveSection, user }: { stats: any; setA
   );
 }
 
+// Field Tracking Summary Component for Dashboard
+function FieldTrackingSummary() {
+  const token = localStorage.getItem('auth_token');
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: trackingData, isLoading } = useQuery({
+    queryKey: ['field-tracking-summary', today],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/location/all-employees?date=${today}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) return { employees: [] };
+      return res.json();
+    }
+  });
+
+  const employees = trackingData?.employees || [];
+  const totalEmployeesTracked = employees.length;
+  const totalDistance = employees.reduce((sum: number, e: any) => sum + (e.totalDistanceKm || 0), 0);
+  const totalVisits = employees.reduce((sum: number, e: any) => sum + (e.visitCount || 0), 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg text-center">
+          <Users className="w-5 h-5 mx-auto mb-1 text-indigo-500" />
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{totalEmployeesTracked}</p>
+          <p className="text-xs text-slate-500">Field Staff</p>
+        </div>
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg text-center">
+          <Navigation className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{totalDistance.toFixed(1)}</p>
+          <p className="text-xs text-slate-500">Total Km</p>
+        </div>
+        <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg text-center">
+          <MapPin className="w-5 h-5 mx-auto mb-1 text-amber-500" />
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{totalVisits}</p>
+          <p className="text-xs text-slate-500">Visits</p>
+        </div>
+      </div>
+
+      {/* Active Field Staff List */}
+      {employees.length > 0 ? (
+        <div className="max-h-48 overflow-y-auto">
+          <p className="text-xs font-medium text-slate-500 mb-2">Active Field Staff Today</p>
+          <div className="space-y-2">
+            {employees.slice(0, 5).map((emp: any) => (
+              <div key={emp.employeeId} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-bold text-indigo-600">{(emp.employeeName || 'U')[0]}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{emp.employeeName || emp.employeeId}</p>
+                    <p className="text-xs text-slate-500">{emp.department || 'Field'}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-300">{emp.totalDistanceKm?.toFixed(1) || 0} km</p>
+                  <p className="text-xs text-slate-400">{emp.visitCount || 0} visits</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          {employees.length > 5 && (
+            <p className="text-xs text-center text-slate-400 mt-2">+{employees.length - 5} more</p>
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-6 text-slate-400">
+          <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No field activity recorded today</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // LeaveBalanceCard removed: dashboard now renders profile-style leave cards directly
+

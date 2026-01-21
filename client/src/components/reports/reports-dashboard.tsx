@@ -405,7 +405,8 @@ export default function ReportsDashboard() {
                     <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Punch In</th>
                     <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Punch Out</th>
                     <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Hours</th>
-                    <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                    <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Punch In Location</th>
+                    <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Punch Out Location</th>
                     <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                   </tr>
                 </thead>
@@ -418,7 +419,8 @@ export default function ReportsDashboard() {
                         <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{r.punchIn ? new Date(r.punchIn).toLocaleString() : ''}</td>
                         <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{r.punchOut ? new Date(r.punchOut).toLocaleString() : ''}</td>
                         <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{r.totalHours ?? ''}</td>
-                        <td className="px-6 py-3 text-sm text-gray-700 max-w-xs truncate" title={r.punchInLocation?.address || ''}>{r.punchInLocation?.address || '--'}</td>
+                        <td className="px-6 py-3 text-sm text-gray-700 max-w-[180px] truncate" title={r.punchInLocation?.address || ''}>{r.punchInLocation?.address || '--'}</td>
+                        <td className="px-6 py-3 text-sm text-gray-700 max-w-[180px] truncate" title={r.punchOutLocation?.address || ''}>{r.punchOutLocation?.address || '--'}</td>
                         <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{r.date || (r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '')}</td>
                       </tr>
                     ))}

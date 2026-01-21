@@ -84,6 +84,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Location tracking routes (field sales tracking)
   app.use('/api/location', authenticateToken, locationTrackerRoutes);
 
+  // Health check endpoint (for Docker, load balancers, monitoring)
+  app.get('/api/health', async (_req, res) => {
+    try {
+      // Basic health check - could add database ping here if needed
+      res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development'
+      });
+    } catch (error) {
+      res.status(503).json({ status: 'unhealthy', error: 'Service unavailable' });
+    }
+  });
+
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
