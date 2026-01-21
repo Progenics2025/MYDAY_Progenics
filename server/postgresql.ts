@@ -24,7 +24,8 @@ export class PostgresStorage {
       port: parseInt(process.env.DB_PORT || '5432'),
       user: process.env.DB_USER || 'paypulse_user',
       password: process.env.DB_PASSWORD || 'Prolab#05',
-      database: process.env.DB_NAME || 'paypulsepro'
+      database: process.env.DB_NAME || 'paypulsepro',
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
     });
     this.db = drizzle(this.pool);
   }
