@@ -76,3 +76,4 @@ scripts/**/*.log
 temp/
 tmp/
 cmdline-tools.zip
+*.zip
