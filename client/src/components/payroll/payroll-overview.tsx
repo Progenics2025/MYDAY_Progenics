@@ -17,6 +17,11 @@ export default function PayrollOverview() {
   const [viewingPayroll, setViewingPayroll] = useState<Payroll | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
+  // Date selection state
+  const currentDate = new Date();
+  const [selectedYear, setSelectedYear] = useState<string>(currentDate.getFullYear().toString());
+  const [selectedMonth, setSelectedMonth] = useState<string>((currentDate.getMonth() + 1).toString());
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -24,13 +29,20 @@ export default function PayrollOverview() {
     queryKey: ["/api/employees"],
   });
 
+  // Fetch payroll for the selected period
+  const Period = `${selectedYear}-${selectedMonth.padStart(2, '0')}`;
+
   const { data: payrollRecords = [] } = useQuery<Payroll[]>({
-    queryKey: ["/api/payroll"],
+    queryKey: ["/api/payroll", { period: Period }],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/payroll?period=${Period}`);
+      return res.json();
+    }
   });
 
   const generatePayrollMutation = useMutation({
     mutationFn: async () => {
-      const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+      const currentMonth = `${selectedYear}-${selectedMonth.padStart(2, '0')}`;
       const employeeIds = (employees as Employee[]).map((emp: Employee) => emp.id);
 
       const response = await apiRequest("POST", "/api/payroll/generate", {
@@ -56,7 +68,8 @@ export default function PayrollOverview() {
   });
 
   const handleGeneratePayroll = () => {
-    if (confirm("Are you sure you want to generate payroll for all employees this month?")) {
+    const monthName = new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'long' });
+    if (confirm(`Are you sure you want to generate payroll for all employees for ${monthName} ${selectedYear}?`)) {
       generatePayrollMutation.mutate();
     }
   };
@@ -97,19 +110,67 @@ export default function PayrollOverview() {
   const employeesPaid = new Set((payrollRecords as Payroll[]).map((pay: Payroll) => pay.employeeId)).size;
   const avgSalary = employeesPaid > 0 ? totalPayroll / employeesPaid : 0;
 
+  // Generate years (current year - 5 to current year + 1)
+  const years = Array.from({ length: 7 }, (_, i) => (currentDate.getFullYear() - 5 + i).toString());
+  const months = [
+    { value: "1", label: "January" },
+    { value: "2", label: "February" },
+    { value: "3", label: "March" },
+    { value: "4", label: "April" },
+    { value: "5", label: "May" },
+    { value: "6", label: "June" },
+    { value: "7", label: "July" },
+    { value: "8", label: "August" },
+    { value: "9", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-foreground mb-4 sm:mb-0">Payroll Management</h2>
-        <Button
-          onClick={handleGeneratePayroll}
-          disabled={generatePayrollMutation.isPending}
-          className="flex items-center space-x-2"
-          data-testid="button-generate-payroll"
-        >
-          <Calculator className="w-4 h-4" />
-          <span>{generatePayrollMutation.isPending ? 'Generating...' : 'Generate Payroll'}</span>
-        </Button>
+
+        <div className="flex flex-col sm:flex-row gap-3 items-end sm:items-center">
+          <div className="flex items-center gap-2">
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            onClick={handleGeneratePayroll}
+            disabled={generatePayrollMutation.isPending}
+            className="flex items-center space-x-2 whitespace-nowrap"
+            data-testid="button-generate-payroll"
+          >
+            <Calculator className="w-4 h-4" />
+            <span>{generatePayrollMutation.isPending ? 'Generating...' : 'Generate Payroll'}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Payroll Overview */}
@@ -128,7 +189,7 @@ export default function PayrollOverview() {
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <span className="text-muted-foreground">For {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+              <span className="text-muted-foreground">For {new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
             </div>
           </CardContent>
         </Card>
