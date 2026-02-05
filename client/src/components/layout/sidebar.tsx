@@ -19,7 +19,7 @@ export default function Sidebar({ activeSection, onSectionChange, isOpen, onClos
   // Define menu items based on user role
   const getAllMenuItems = () => [
     { id: "dashboard", label: "Dashboard", icon: BarChart3, roles: ["admin", "manager", "employee"] },
-    { id: "employees", label: "Team", icon: Users, roles: ["admin", "hr"] },
+    { id: "employees", label: "Team", icon: Users, roles: ["admin", "hr", "manager"] },
     { id: "attendance", label: "Attendance", icon: Clock, roles: ["admin", "manager", "employee"] },
     { id: "field-tracking", label: "Field Tracking", icon: MapPin, roles: ["admin", "manager"] },
     { id: "payroll", label: "Payroll", icon: DollarSign, roles: ["admin", "hr"] },
@@ -53,7 +53,7 @@ export default function Sidebar({ activeSection, onSectionChange, isOpen, onClos
   // Filter menu items based on user role and employee department
   const menuItems = getAllMenuItems().filter(item => {
     // Special-case Employees and Payroll: allow admin or HR managers
-    if (item.id === 'employees' || item.id === 'payroll') {
+    if (item.id === 'payroll') {
       if (user?.role === 'admin') return true;
       if (user?.role === 'hr') return true;
       if (user?.role === 'manager' && employee?.department === 'HR') return true;

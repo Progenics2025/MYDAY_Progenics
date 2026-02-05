@@ -5,8 +5,8 @@ import type { Request } from 'express';
 import { randomUUID } from 'crypto';
 import { sendMail } from '../lib/mailer';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Build the HTML body for leave request notifications so it can be reused
 function buildLeaveRequestEmailHtml(leaveDetails: any) {
@@ -124,6 +124,7 @@ interface AuthRequest extends Request {
   user?: {
     id: string;
   };
+  file?: Express.Multer.File;
 }
 
 const router = Router();
@@ -131,7 +132,7 @@ const router = Router();
 // Setup multer storage for leave document uploads
 const leaveStorage = multer.diskStorage({
   destination: './uploads/',
-  filename: (_req, file, cb) => {
+  filename: (_req: Express.Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
     cb(null, `${Date.now()}-leave-${path.basename(file.originalname)}`);
   }
 });
@@ -316,7 +317,7 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
             employeeId: leaveRequest.employeeId,
             payload: { createdAt: new Date().toISOString() }
           });
-          if (note && note.id) leaveRequest.notificationId = note.id;
+          if (note && note.id) (leaveRequest as any).notificationId = note.id;
           console.log('[LEAVE-EMAIL] Notification created successfully');
         } catch (notifyErr) {
           // Don't let notification creation failure block email sending
@@ -362,26 +363,26 @@ router.post('/', upload.single('document'), async (req: AuthRequest, res) => {
           return sendMail({ to, subject: 'New leave request awaiting your approval', text: `A new leave request (${leaveRequest.id}) needs your approval.`, html: htmlBody })
             .then((result: any) => {
               console.log('[LEAVE-EMAIL] Email sent successfully to:', to);
-              return { to, ok: true, result };
+              return { to, ok: true as const, result };
             })
             .catch((err: any) => {
               console.error('[LEAVE-EMAIL] Email send failed for:', to, err);
-              return { to, ok: false, err };
+              return { to, ok: false as const, err };
             });
         });
 
         const settled = await Promise.all(sendPromises);
         for (const r of settled) {
           if (r.ok) {
-            const previewUrl = (r as { to: string; ok: true; result: any }).result?.previewUrl || (r as { to: string; ok: true; result: any }).result?.info?.previewUrl;
+            const previewUrl = r.result?.previewUrl || r.result?.info?.previewUrl;
             if (previewUrl) {
-              leaveRequest.previewUrls = leaveRequest.previewUrls || [];
-              leaveRequest.previewUrls.push(previewUrl);
+              (leaveRequest as any).previewUrls = (leaveRequest as any).previewUrls || [];
+              (leaveRequest as any).previewUrls.push(previewUrl);
               console.log('[LEAVE-EMAIL] Preview URL:', previewUrl);
             }
             console.log('[LEAVE-EMAIL] Leave notification sent to', r.to);
           } else {
-            console.error('[LEAVE-EMAIL] Failed to send leave notification to', r.to, (r as { to: string; ok: false; err: any }).err);
+            console.error('[LEAVE-EMAIL] Failed to send leave notification to', r.to, 'err' in r ? r.err : 'Unknown error');
           }
         }
       }

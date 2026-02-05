@@ -9,6 +9,7 @@ import { Calendar } from 'lucide-react';
 import { useAuthState } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import PermissionRequestForm from './permission-request-form';
 
 interface LeaveBalances {
   casualLeave: number;
@@ -228,160 +229,175 @@ export default function LeaveRequestForm() {
   const isSingleDay = formData.startDate && formData.endDate && formData.startDate === formData.endDate;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Leave Request</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Start Date</label>
-              <Input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                required
-              />
-            </div>
+    <div className="space-y-6">
+      {/* Section Header */}
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900">Leave & Permission Management</h2>
+        <p className="text-sm text-gray-600 mt-1">Request and track your leave applications and 2-hour permissions</p>
+      </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">End Date</label>
-              <Input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                required
-              />
-            </div>
-          </div>
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Leave Request Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Leave Request</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Start Date</label>
+                  <Input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    required
+                  />
+                </div>
 
-          {/* Half Day Options - Only show for single day requests */}
-          {isSingleDay && (
-            <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="halfDay"
-                  checked={formData.isHalfDay}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    isHalfDay: e.target.checked,
-                    halfDayDuration: e.target.checked ? '0.5' : '1.0'
-                  })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="halfDay" className="text-sm font-medium">
-                  This is a half-day leave
-                </label>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">End Date</label>
+                  <Input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
 
-              {formData.isHalfDay && (
+              {/* Half Day Options - Only show for single day requests */}
+              {isSingleDay && (
+                <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="halfDay"
+                      checked={formData.isHalfDay}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        isHalfDay: e.target.checked,
+                        halfDayDuration: e.target.checked ? '0.5' : '1.0'
+                      })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="halfDay" className="text-sm font-medium">
+                      This is a half-day leave
+                    </label>
+                  </div>
+
+                  {formData.isHalfDay && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Leave Duration</label>
+                      <Select
+                        value={formData.halfDayDuration}
+                        onValueChange={(value) => setFormData({ ...formData, halfDayDuration: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0.5">0.5 day (Half Day - 4 hours)</SelectItem>
+                          <SelectItem value="1.0">1.0 day (Full Day - 8 hours)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500">
+                        {formData.halfDayDuration === '0.5'
+                          ? 'Half Day: 4 hours leave'
+                          : 'Full Day: 8 hours leave'
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Leave Type</label>
+                <Select
+                  value={formData.leaveType}
+                  onValueChange={(value) => setFormData({ ...formData, leaveType: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select leave type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      value="casual"
+                      disabled={!isLeaveTypeAvailable('casual')}
+                      className={!isLeaveTypeAvailable('casual') ? 'opacity-50' : ''}
+                    >
+                      Casual Leave ({getBalanceForType('casual')} days{!isLeaveTypeAvailable('casual') ? ' - Not available' : ''})
+                    </SelectItem>
+                    <SelectItem
+                      value="sick"
+                      disabled={!isLeaveTypeAvailable('sick')}
+                      className={!isLeaveTypeAvailable('sick') ? 'opacity-50' : ''}
+                    >
+                      Sick Leave ({getBalanceForType('sick')} days{!isLeaveTypeAvailable('sick') ? ' - Not available' : ''})
+                    </SelectItem>
+                    <SelectItem
+                      value="earned"
+                      disabled={!isLeaveTypeAvailable('earned')}
+                      className={!isLeaveTypeAvailable('earned') ? 'opacity-50' : ''}
+                    >
+                      Earned Leave ({getBalanceForType('earned')} days{!isLeaveTypeAvailable('earned') ? ' - Not available' : ''})
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {formErrors.leaveType && (
+                  <p className="text-sm text-red-500">{formErrors.leaveType}</p>
+                )}
+              </div>
+
+              {/* File upload: shown only when sick leave longer than 2 days */}
+              {(formData.leaveType === 'sick' && formData.startDate && formData.endDate && calculateTotalDays(formData.startDate, formData.endDate) > 2) && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Leave Duration</label>
-                  <Select
-                    value={formData.halfDayDuration}
-                    onValueChange={(value) => setFormData({ ...formData, halfDayDuration: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0.5">0.5 day (Half Day - 4 hours)</SelectItem>
-                      <SelectItem value="1.0">1.0 day (Full Day - 8 hours)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    {formData.halfDayDuration === '0.5'
-                      ? 'Half Day: 4 hours leave'
-                      : 'Full Day: 8 hours leave'
-                    }
+                  <label className="text-sm font-medium">Upload Medical Document</label>
+                  <Input
+                    type="file"
+                    onChange={(e) => setFormData({ ...formData, document: e.target.files ? e.target.files[0] : null })}
+                    accept="application/pdf,image/*"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Reason</label>
+                <Textarea
+                  value={formData.reason}
+                  onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                  required
+                  rows={3}
+                />
+              </div>
+
+              {/* Display calculated total days */}
+              {formData.startDate && formData.endDate && (
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    Total leave days: <strong>{calculateTotalDays(formData.startDate, formData.endDate)}</strong>
+                    {formData.isHalfDay && isSingleDay && (
+                      formData.halfDayDuration === '0.5'
+                        ? ' (Half Day - 4 hours)'
+                        : ' (Full Day - 8 hours)'
+                    )}
                   </p>
                 </div>
               )}
-            </div>
-          )}
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Leave Type</label>
-            <Select
-              value={formData.leaveType}
-              onValueChange={(value) => setFormData({ ...formData, leaveType: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select leave type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value="casual"
-                  disabled={!isLeaveTypeAvailable('casual')}
-                  className={!isLeaveTypeAvailable('casual') ? 'opacity-50' : ''}
-                >
-                  Casual Leave ({getBalanceForType('casual')} days{!isLeaveTypeAvailable('casual') ? ' - Not available' : ''})
-                </SelectItem>
-                <SelectItem
-                  value="sick"
-                  disabled={!isLeaveTypeAvailable('sick')}
-                  className={!isLeaveTypeAvailable('sick') ? 'opacity-50' : ''}
-                >
-                  Sick Leave ({getBalanceForType('sick')} days{!isLeaveTypeAvailable('sick') ? ' - Not available' : ''})
-                </SelectItem>
-                <SelectItem
-                  value="earned"
-                  disabled={!isLeaveTypeAvailable('earned')}
-                  className={!isLeaveTypeAvailable('earned') ? 'opacity-50' : ''}
-                >
-                  Earned Leave ({getBalanceForType('earned')} days{!isLeaveTypeAvailable('earned') ? ' - Not available' : ''})
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {formErrors.leaveType && (
-              <p className="text-sm text-red-500">{formErrors.leaveType}</p>
-            )}
-          </div>
+              <Button type="submit" className="w-full" disabled={leaveMutation.isPending}>
+                <Calendar className="w-4 h-4 mr-2" />
+                {leaveMutation.isPending ? "Submitting..." : "Submit Leave Request"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-          {/* File upload: shown only when sick leave longer than 2 days */}
-          {(formData.leaveType === 'sick' && formData.startDate && formData.endDate && calculateTotalDays(formData.startDate, formData.endDate) > 2) && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Upload Medical Document</label>
-              <Input
-                type="file"
-                onChange={(e) => setFormData({ ...formData, document: e.target.files ? e.target.files[0] : null })}
-                accept="application/pdf,image/*"
-              />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Reason</label>
-            <Textarea
-              value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              required
-              rows={3}
-            />
-          </div>
-
-          {/* Display calculated total days */}
-          {formData.startDate && formData.endDate && (
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
-                Total leave days: <strong>{calculateTotalDays(formData.startDate, formData.endDate)}</strong>
-                {formData.isHalfDay && isSingleDay && (
-                  formData.halfDayDuration === '0.5'
-                    ? ' (Half Day - 4 hours)'
-                    : ' (Full Day - 8 hours)'
-                )}
-              </p>
-            </div>
-          )}
-
-          <Button type="submit" className="w-full" disabled={leaveMutation.isPending}>
-            <Calendar className="w-4 h-4 mr-2" />
-            {leaveMutation.isPending ? "Submitting..." : "Submit Leave Request"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        {/* 2-Hour Permission Request Form */}
+        <PermissionRequestForm />
+      </div>
+    </div>
   );
 }

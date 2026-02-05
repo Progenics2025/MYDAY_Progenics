@@ -1427,4 +1427,108 @@ export class PostgresStorage {
     const result = await this.pool.query(sql, [employeeId, startDate, endDate]);
     return result.rows;
   }
+
+  // ========================================
+  // Permission Request Operations (2-Hour Monthly Permission)
+  // ========================================
+
+  async createPermissionRequest(data: {
+    employeeId: string;
+    permissionDate: Date;
+    duration: number;
+    reason: string;
+    status: string;
+  }): Promise<any> {
+    const id = randomUUID();
+    const now = new Date();
+    const sql = `
+      INSERT INTO permission_requests 
+        (id, employee_id, permission_date, duration, reason, status, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `;
+    const values = [
+      id,
+      data.employeeId,
+      data.permissionDate,
+      data.duration,
+      data.reason,
+      data.status || 'pending',
+      now,
+      now
+    ];
+    const result = await this.pool.query(sql, values);
+    return result.rows[0];
+  }
+
+  async getPermissionRequests(employeeId: string): Promise<any[]> {
+    const sql = `
+      SELECT * FROM permission_requests 
+      WHERE employee_id = $1 
+      ORDER BY created_at DESC
+    `;
+    const result = await this.pool.query(sql, [employeeId]);
+    return result.rows;
+  }
+
+  async getPermissionUsage(employeeId: string, month: number, year: number): Promise<any> {
+    const sql = `
+      SELECT * FROM permission_usage 
+      WHERE employee_id = $1 AND month = $2 AND year = $3
+    `;
+    const result = await this.pool.query(sql, [employeeId, month, year]);
+    return result.rows[0] || null;
+  }
+
+  async updatePermissionUsage(employeeId: string, month: number, year: number, hoursToAdd: number): Promise<any> {
+    const existing = await this.getPermissionUsage(employeeId, month, year);
+
+    if (existing) {
+      // Update existing record
+      const newTotal = (existing.total_hours_used || 0) + hoursToAdd;
+      const sql = `
+        UPDATE permission_usage 
+        SET total_hours_used = $1, updated_at = NOW()
+        WHERE employee_id = $2 AND month = $3 AND year = $4
+        RETURNING *
+      `;
+      const result = await this.pool.query(sql, [newTotal, employeeId, month, year]);
+      return result.rows[0];
+    } else {
+      // Create new record
+      const id = randomUUID();
+      const sql = `
+        INSERT INTO permission_usage 
+          (id, employee_id, month, year, total_hours_used, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        RETURNING *
+      `;
+      const result = await this.pool.query(sql, [id, employeeId, month, year, hoursToAdd]);
+      return result.rows[0];
+    }
+  }
+
+  async updatePermissionRequestStatus(id: string, status: string, approvedBy?: string): Promise<any> {
+    const sets: string[] = ['status = $1', 'updated_at = NOW()'];
+    const values: any[] = [status];
+    let idx = 2;
+
+    if (approvedBy) {
+      sets.push(`approved_by = $${idx++}`);
+      values.push(approvedBy);
+      sets.push(`approved_at = $${idx++}`);
+      values.push(new Date());
+    }
+
+    values.push(id);
+    const sql = `
+      UPDATE permission_requests 
+      SET ${sets.join(', ')} 
+      WHERE id = $${idx}
+      RETURNING *
+    `;
+    const result = await this.pool.query(sql, values);
+    return result.rows[0];
+  }
 }
+

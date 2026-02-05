@@ -51,6 +51,7 @@ const upload = multer({ storage: multerStorage });
 // Import route handlers
 import expenseRoutes from './routes/expenses';
 import leaveRoutes from './routes/leave';
+import permissionRoutes from './routes/permission';
 import reportRoutes from './routes/reports';
 import documentsRoutes from './routes/documents';
 import profileRoutes from './routes/profile';
@@ -64,6 +65,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register leave routes
   app.use('/api/leave-requests', authenticateToken, leaveRoutes);
+
+  // Register permission routes (2-hour monthly permission)
+  app.use('/api/permission-requests', authenticateToken, permissionRoutes);
 
   // Register documents routes
   app.use('/api/documents', authenticateToken, documentsRoutes);
